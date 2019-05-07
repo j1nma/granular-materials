@@ -58,8 +58,7 @@ public class Particle implements Cloneable {
 				+ df.format(velocity.getX()) + " "
 				+ df.format(velocity.getY()) + " "
 				+ radius + " "
-				+ mass + " "
-				+ df.format(getKineticEnergy()) + " ";
+				+ mass + " ";
 	}
 
 	public int getId() {
