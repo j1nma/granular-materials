@@ -74,16 +74,16 @@ public class GravitationalGranularSilo {
 		// Print to buffer and set dummy particles for Ovito grid
 		printFirstFrame(buffer, particles);
 
-		Criteria timeCriteria = new TimeCriteria(limitTime);
+		Criteria timeCriteria = new TimeCriteria(0);
 
 		// Print frame
 		int currentFrame = 1;
 		printDeltaT = 0.01;
 		int printFrame = (int) Math.ceil(printDeltaT / dt); // Print every 100 frames
 
-//		while (!timeCriteria.isDone(particles, time)) {
-//			time += dt;
-//
+		while (!timeCriteria.isDone(particles, time)) {
+			time += dt;
+
 //			// Calculate neighbours
 //			CellIndexMethod.run(particles,
 //					Math.max(boxHeight, boxWidth),
@@ -116,7 +116,7 @@ public class GravitationalGranularSilo {
 //				particles.stream().parallel().forEach(p -> moveParticle(p, dt));
 //			}
 
-		// calculo nueva posicion e imprimo
+			// calculo nueva posicion e imprimo
 //			particles.stream().parallel().forEach(p -> {
 //				// get new X position
 //				double Ax = p.getForce().getX() / p.getMass(); // acceleration in X axis
@@ -126,33 +126,29 @@ public class GravitationalGranularSilo {
 //				double Y = p.getPosition().getY() + Ay * dt; // new Y position
 //
 //				p.setPosition(new Vector2D(X, Y));
-//
-//				// la imprimo TODO agregar aca para que solo cada printDeltaT
-////				buffer.write();(particleToString(p));
 //			});
 
-//			if ((currentFrame % printFrame) == 0) {
-//				buffer.write(String.valueOf(particles.size() + 2 + ((int) boxHeight / 5)));
-//				buffer.newLine();
-//				buffer.write(String.valueOf(currentFrame));
-//				buffer.newLine();
-//				printGridDummyParticles(buffer);
-//				particles.stream().parallel().forEach(p -> {
-//					try {
-//						buffer.write(particleToString(p));
-//					} catch (IOException e1) {
-//						e1.printStackTrace();
-//					}
-////					p.clearNeighbours();
-//				});
-//			}
+			if ((currentFrame % printFrame) == 0) {
+				buffer.write(String.valueOf(particles.size() + 2 + ((int) boxHeight / 5)));
+				buffer.newLine();
+				buffer.write(String.valueOf(currentFrame));
+				buffer.newLine();
+				printGridDummyParticles(buffer);
+				particles.stream().parallel().forEach(p -> {
+					try {
+						buffer.write(particleToString(p));
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
+				});
+			}
 
-		// agrego las dummy
-//			printGridDummyParticles(buffer);
+			// agrego las dummy
+			printGridDummyParticles(buffer);
 
-//			System.out.println("Current frame: " + currentFrame);
-//			currentFrame++;
-//		}
+			System.out.println("Current frame: " + currentFrame);
+			currentFrame++;
+		}
 
 	}
 

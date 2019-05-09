@@ -8,6 +8,8 @@ import java.util.Random;
 
 public class ParticleGenerator {
 
+	private static final double MAX_TRIES = 10000;
+
 	public List<Particle> generate(int numberOfParticles, double areaLength, double areaWidth, double minDiameter, double maxDiameter, double mass) {
 		List<Particle> particles = new LinkedList<>();
 
@@ -25,9 +27,19 @@ public class ParticleGenerator {
 		first.setVelocity(Vector2D.ZERO);
 		particles.add(first);
 
-		for (int i = 1; i < numberOfParticles; i++) {
+		// Run until max number of tries is reached for a particle allocation at silo area
+		boolean flag = true;
+		for (int i = 1; i < numberOfParticles && flag; i++) {
+
 			boolean validPosition = false;
+			int tries = 0;
 			while (!validPosition) {
+				tries++;
+				if (tries == MAX_TRIES) {
+					flag = false;
+					break;
+				}
+
 				// Generate random radius and position
 				radius = (minDiameter + (maxDiameter - minDiameter) * r.nextDouble()) / 2;
 				x = r.nextDouble() * (areaWidth - 2 * (maxDiameter / 2)) + (maxDiameter / 2);
