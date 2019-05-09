@@ -8,16 +8,16 @@ import java.util.Random;
 
 public class ParticleGenerator {
 
-	public List<Particle> generate(int numberOfParticles, double areaLength, double lowerDiameter, double upperDiameter, double mass) {
+	public List<Particle> generate(int numberOfParticles, double areaLength, double areaWidth, double minDiameter, double maxDiameter, double mass) {
 		List<Particle> particles = new LinkedList<>();
 
 		// Generate first random diameter
 		Random r = new Random();
-		double radius = (lowerDiameter + (upperDiameter - lowerDiameter) * r.nextDouble()) / 2;
+		double radius = (minDiameter + (maxDiameter - minDiameter) * r.nextDouble()) / 2;
 
-		// Generate first random position with maximum radius as limit (upperDiameter / 2)
-		double x = r.nextDouble() * (areaLength - 2 * (upperDiameter / 2)) + (upperDiameter / 2);
-		double y = r.nextDouble() * (areaLength - 2 * (upperDiameter / 2)) + (upperDiameter / 2);
+		// Generate first random position with maximum radius as limit (maxDiameter / 2)
+		double x = r.nextDouble() * (areaWidth - 2 * (maxDiameter / 2)) + (maxDiameter / 2);
+		double y = r.nextDouble() * (areaLength - 2 * (maxDiameter / 2)) + (maxDiameter / 2);
 
 		// Generate first particle
 		Particle first = new Particle(0, radius, mass);
@@ -29,9 +29,9 @@ public class ParticleGenerator {
 			boolean validPosition = false;
 			while (!validPosition) {
 				// Generate random radius and position
-				radius = (lowerDiameter + (upperDiameter - lowerDiameter) * r.nextDouble()) / 2;
-				x = r.nextDouble() * (areaLength - 2 * (upperDiameter / 2)) + (upperDiameter / 2);
-				y = r.nextDouble() * (areaLength - 2 * (upperDiameter / 2)) + (upperDiameter / 2);
+				radius = (minDiameter + (maxDiameter - minDiameter) * r.nextDouble()) / 2;
+				x = r.nextDouble() * (areaWidth - 2 * (maxDiameter / 2)) + (maxDiameter / 2);
+				y = r.nextDouble() * (areaLength - 2 * (maxDiameter / 2)) + (maxDiameter / 2);
 
 				int j = 0;
 				validPosition = true;
@@ -46,7 +46,7 @@ public class ParticleGenerator {
 					j++;
 				}
 			}
-			Particle p = new Particle(i + 1, radius, mass);
+			Particle p = new Particle(i, radius, mass);
 			p.setPosition(new Vector2D(x, y));
 			p.setVelocity(Vector2D.ZERO);
 			particles.add(p);
