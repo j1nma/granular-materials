@@ -4,7 +4,7 @@ import com.google.devtools.common.options.Option;
 import com.google.devtools.common.options.OptionsBase;
 
 /**
- * Command-line options definition for example server.
+ * Command-line options.
  */
 public class SimulationOptions extends OptionsBase {
 
@@ -17,35 +17,8 @@ public class SimulationOptions extends OptionsBase {
 	public boolean help;
 
 	@Option(
-			name = "lennardJonesGas",
-			abbrev = 'j',
-			help = "Run Lennard Jones Gas simulation.",
-			category = "startup",
-			defaultValue = "false"
-	)
-	public boolean lennardJonesGas;
-
-	@Option(
-			name = "staticFile",
-			abbrev = 's',
-			help = "Path to static file.",
-			category = "startup",
-			defaultValue = "/"
-	)
-	public String staticFile;
-
-	@Option(
-			name = "dynamicFile",
-			abbrev = 'd',
-			help = "Path to dynamic file.",
-			category = "startup",
-			defaultValue = "/"
-	)
-	public String dynamicFile;
-
-	@Option(
 			name = "limitTime",
-			abbrev = 'l',
+			abbrev = 'm',
 			help = "Maximum time of simulation (s).",
 			category = "startup",
 			defaultValue = "5.0"
@@ -71,38 +44,47 @@ public class SimulationOptions extends OptionsBase {
 	public double printDeltaT;
 
 	@Option(
-			name = "mass",
-			abbrev = 'm',
-			help = "Particle mass (kg).",
+			name = "length",
+			abbrev = 'l',
+			help = "Length of silo [1 - 1.5 m].",
 			category = "startup",
-			defaultValue = "70.0"
+			defaultValue = "1.0"
 	)
-	public double mass;
+	public double length;
+
+	@Option(
+			name = "width",
+			abbrev = 'w',
+			help = "Width of silo [0.3 - 0.4 m].",
+			category = "startup",
+			defaultValue = "0.3"
+	)
+	public double width;
+
+	@Option(
+			name = "diameter",
+			abbrev = 'd',
+			help = "Diameter of outlet [0.15 - 0.25 m].",
+			category = "startup",
+			defaultValue = "0.15"
+	)
+	public double diameter;
 
 	@Option(
 			name = "stiffness",
 			abbrev = 'k',
 			help = "Stiffness (N/m).",
 			category = "startup",
-			defaultValue = "10000"
+			defaultValue = "100000"
 	)
-	public double k;
+	public double kN;
 
 	@Option(
 			name = "vdc",
 			abbrev = 'g',
 			help = "Viscous damping coefficient (kg/s).",
 			category = "startup",
-			defaultValue = "100.0"
+			defaultValue = "70.0"
 	)
 	public double vdc;
-
-	@Option(
-			name = "initialPosition",
-			abbrev = 'i',
-			help = "Initial position at t=0 (m).",
-			category = "startup",
-			defaultValue = "1.0"
-	)
-	public double initialPosition;
 }
