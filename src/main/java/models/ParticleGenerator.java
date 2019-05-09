@@ -12,24 +12,12 @@ public class ParticleGenerator {
 
 	public List<Particle> generate(int numberOfParticles, double areaLength, double areaWidth, double minDiameter, double maxDiameter, double mass) {
 		List<Particle> particles = new LinkedList<>();
-
-		// Generate first random diameter
 		Random r = new Random();
-		double radius = (minDiameter + (maxDiameter - minDiameter) * r.nextDouble()) / 2;
-
-		// Generate first random position with maximum radius as limit (maxDiameter / 2)
-		double x = r.nextDouble() * (areaWidth - 2 * (maxDiameter / 2)) + (maxDiameter / 2);
-		double y = r.nextDouble() * (areaLength - 2 * (maxDiameter / 2)) + (maxDiameter / 2);
-
-		// Generate first particle
-		Particle first = new Particle(0, radius, mass);
-		first.setPosition(new Vector2D(x, y));
-		first.setVelocity(Vector2D.ZERO);
-		particles.add(first);
+		double radius = 0.0, x = 0.0, y = 0.0;
 
 		// Run until max number of tries is reached for a particle allocation at silo area
 		boolean flag = true;
-		for (int i = 1; i < numberOfParticles && flag; i++) {
+		for (int i = 0; i < numberOfParticles && flag; i++) {
 
 			boolean validPosition = false;
 			int tries = 0;
@@ -42,8 +30,8 @@ public class ParticleGenerator {
 
 				// Generate random radius and position
 				radius = (minDiameter + (maxDiameter - minDiameter) * r.nextDouble()) / 2;
-				x = r.nextDouble() * (areaWidth - 2 * (maxDiameter / 2)) + (maxDiameter / 2);
-				y = r.nextDouble() * (areaLength - 2 * (maxDiameter / 2)) + (maxDiameter / 2);
+				x = r.nextDouble() * (areaWidth - 2 * radius) + radius;
+				y = r.nextDouble() * (areaLength - 2 * radius) + radius;
 
 				int j = 0;
 				validPosition = true;
@@ -58,7 +46,7 @@ public class ParticleGenerator {
 					j++;
 				}
 			}
-			Particle p = new Particle(i, radius, mass);
+			Particle p = new Particle(i + 1, radius, mass);
 			p.setPosition(new Vector2D(x, y));
 			p.setVelocity(Vector2D.ZERO);
 			particles.add(p);

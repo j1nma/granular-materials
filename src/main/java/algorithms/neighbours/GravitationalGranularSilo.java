@@ -143,9 +143,6 @@ public class GravitationalGranularSilo {
 				});
 			}
 
-			// agrego las dummy
-			printGridDummyParticles(buffer);
-
 			System.out.println("Current frame: " + currentFrame);
 			currentFrame++;
 		}
