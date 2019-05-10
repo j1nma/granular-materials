@@ -12,8 +12,6 @@ public class ParticleGenerator {
 
 	public List<Particle> generate(int numberOfParticles, double areaLength, double areaWidth, double minDiameter, double maxDiameter, double mass) {
 		List<Particle> particles = new LinkedList<>();
-		Random r = new Random();
-		double radius = 0.0, x = 0.0, y = 0.0;
 
 		// Run until max number of tries is reached for a particle allocation at silo area
 		boolean flag = true;
@@ -21,6 +19,9 @@ public class ParticleGenerator {
 
 			boolean validPosition = false;
 			int tries = 0;
+
+			Particle p = new Particle(i + 1, 0.0, mass);
+
 			while (!validPosition) {
 				tries++;
 				if (tries == MAX_TRIES) {
@@ -28,34 +29,67 @@ public class ParticleGenerator {
 					break;
 				}
 
-				// Generate random radius and position
-				radius = (minDiameter + (maxDiameter - minDiameter) * r.nextDouble()) / 2;
-				x = r.nextDouble() * (areaWidth - 2 * radius) + radius;
-				y = r.nextDouble() * (areaLength - 2 * radius) + radius;
-
-				int j = 0;
-				validPosition = true;
-
-				// Check new position is valid with all previous ones
-				while (j < particles.size() && validPosition) {
-					Particle otherParticle = ((Particle) particles.toArray()[j]);
-					validPosition = isValidPosition(otherParticle.getPosition().getX(),
-							otherParticle.getPosition().getY(),
-							otherParticle.getRadius(),
-							x, y, radius);
-					j++;
-				}
+				validPosition = setNewRandomPosition(particles,
+						p,
+						new Vector2D(0.0, areaWidth),
+						new Vector2D(areaLength / 10, areaLength * 1.1),
+						minDiameter,
+						maxDiameter);
 			}
-			Particle p = new Particle(i + 1, radius, mass);
-			p.setPosition(new Vector2D(x, y));
-			p.setVelocity(Vector2D.ZERO);
 			particles.add(p);
 		}
 
 		return particles;
 	}
 
-	private boolean isValidPosition(double otherX, double otherY, double otherRadius, double newX, double newY, double newRadius) {
+	/**
+	 * Assign new empty position to particle
+	 *
+	 * @param particles
+	 * @param particle
+	 * @param xRange
+	 * @param yRange
+	 * @return true if successful
+	 */
+	public static boolean setNewRandomPosition(List<Particle> particles,
+	                                           Particle particle,
+	                                           Vector2D xRange,
+	                                           Vector2D yRange,
+	                                           double minDiameter,
+	                                           double maxDiameter) {
+		Random r = new Random();
+		double radius, x, y;
+
+		// Generate random radius and position
+		radius = (minDiameter + (maxDiameter - minDiameter) * r.nextDouble()) / 2;
+		x = r.nextDouble() * (xRange.getY() - 2 * radius) + radius + xRange.getX();
+		double areaLength = yRange.getY() - yRange.getX();
+		y = r.nextDouble() * (areaLength - 2 * radius) + radius + yRange.getX();
+
+		int j = 0;
+		boolean validPosition = true;
+
+		// Check new position is valid with all previous ones
+		while (j < particles.size() && validPosition) {
+			Particle otherParticle = ((Particle) particles.toArray()[j]);
+			validPosition = isValidPosition(otherParticle.getPosition().getX(),
+					otherParticle.getPosition().getY(),
+					otherParticle.getRadius(),
+					x, y, radius);
+			j++;
+		}
+
+		if (validPosition) {
+			particle.setRadius(radius);
+			particle.setPosition(new Vector2D(x, y));
+			particle.setVelocity(Vector2D.ZERO);
+		}
+
+		return validPosition;
+	}
+
+
+	private static boolean isValidPosition(double otherX, double otherY, double otherRadius, double newX, double newY, double newRadius) {
 		return (Math.pow(otherX - newX, 2) + Math.pow(otherY - newY, 2)) > Math.pow(otherRadius + newRadius, 2);
 	}
 }
