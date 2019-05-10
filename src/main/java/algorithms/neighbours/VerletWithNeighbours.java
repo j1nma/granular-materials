@@ -21,7 +21,7 @@ public class VerletWithNeighbours implements IntegrationMethodWithNeighbours {
 		final Vector2D predictedPosition = particle.getPosition()
 				.scalarMultiply(2)
 				.subtract(previousPosition)
-				.add(currentForce.scalarMultiply(dt * dt / particle.getMass()));
+				.add(currentForce.scalarMultiply(Math.pow(dt, 2) / particle.getMass()));
 
 		final Vector2D predictedVelocity = predictedPosition
 				.subtract(previousPosition)
