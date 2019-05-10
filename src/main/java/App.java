@@ -59,8 +59,7 @@ public class App {
 				options.width,
 				options.diameter,
 				options.kN,
-				options.kN * 2,
-				options.vdc
+				options.kN * 2
 		);
 	}
 
@@ -72,8 +71,7 @@ public class App {
 	                                 double width,
 	                                 double diameter,
 	                                 double kN,
-	                                 double kT,
-	                                 double gamma) throws IOException {
+	                                 double kT) throws IOException {
 
 		FileWriter fw = new FileWriter(String.valueOf(Paths.get(OVITO_FILE)));
 		BufferedWriter writeFileBuffer = new BufferedWriter(fw);
@@ -88,8 +86,7 @@ public class App {
 				width,
 				diameter,
 				kN,
-				kT,
-				gamma
+				kT
 		);
 
 		writeFileBuffer.close();
