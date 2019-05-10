@@ -2,41 +2,26 @@ package algorithms.neighbours;
 
 import models.Criteria;
 import models.Particle;
+import models.ParticleGenerator;
 import models.TimeCriteria;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
-/**
- * Consider a Lennard-Jones gas formed by particles whose dimensionless parameters are
- * rm (distance where V is minimum) = 1,
- * ε = 2,
- * m = 0.1,
- * and initial velocity v = 10.
- * <p>
- * The cutoff distance of the potential is r = 5.
- * <p>
- * The box containing the gas measures 200 units high x 400 wide with a partition that divides the box
- * into two halves of 200 x 200 and has a central hole of 10 units (qualitatively similar to Fig.1 of TP Nro .3).
- * <p>
- * Initially all the particles are on the left side of the box and as the system evolves they will spread
- * to the other half. The particles are confined in the box so the boundary condition is rigid walls.
- */
 public class GravitationalGranularSilo {
 
-	private static double distanceAtMinimum = 1.0; // rM
-	private static double holeDepth = 2;
-	private static double interactionRadius = 5;
 	private static double boxHeight = 1.0;
 	private static double boxWidth = 0.3;
-	private static double centralHoleUnits = 10;
-	private static double RM = 1.0;
-	private static double e = 2.0;
+	private static double boxDiameter = 0.15;
+
+	private static final double G = -10;
+
+	private static final double MAX_INTERACTION_RADIUS = 0.03 / 2;
+
+	private static final double MIN_DIAMETER = 0.02;
+	private static final double MAX_DIAMETER = 0.03;
 
 	// Initial State
 	private static double time = 0.0;
@@ -54,16 +39,19 @@ public class GravitationalGranularSilo {
 			double width,
 			double diameter,
 			double kN,
-			double kT,
-			double gamma) throws IOException {
+			double kT) throws IOException {
 
 		boxHeight = length;
 		boxWidth = width;
+		boxDiameter = diameter;
 
 //		Particle p1 = particles.get(0);
 //		Particle p2 = particles.get(1);
-//		p1.setPosition(new Vector2D(100, 196));
-//		p2.setPosition(new Vector2D(102, 52));
+//		p1.setPosition(new Vector2D(0.05 - 0.02, 0.5));
+////		p1.setPosition(new Vector2D(boxWidth / 2, boxHeight / 1.7));
+//		p1.setRadius(0.014);
+//		p2.setRadius(0.014);
+//		p2.setPosition(new Vector2D(0.05 - 0.02, 0.3));
 //		p1.setVelocity(new Vector2D(0, 0));
 //		p2.setVelocity(new Vector2D(0, 0));
 //		List<Particle> test2particles = new ArrayList<>();
@@ -74,62 +62,57 @@ public class GravitationalGranularSilo {
 		// Print to buffer and set dummy particles for Ovito grid
 		printFirstFrame(buffer, particles);
 
-		Criteria timeCriteria = new TimeCriteria(0);
+		Criteria timeCriteria = new TimeCriteria(0.25);
 
 		// Print frame
 		int currentFrame = 1;
-		printDeltaT = 0.01;
-		int printFrame = (int) Math.ceil(printDeltaT / dt); // Print every 100 frames
+		int printFrame = (int) Math.ceil(printDeltaT / dt);
+
 
 		while (!timeCriteria.isDone(particles, time)) {
 			time += dt;
 
-//			// Calculate neighbours
-//			CellIndexMethod.run(particles,
-//					Math.max(boxHeight, boxWidth),
-//					(int) Math.floor(Math.max(boxHeight, boxWidth) / interactionRadius),
-//					interactionRadius);
-//
-////			// calcular la sumatoria de fuerzas de cada particula con falsas para las paredes
-//			particles.stream().parallel().forEach(p -> {
-//				Set<Particle> neighboursCustom = new HashSet<>(p.getNeighbours());
-////				addFakeWallParticles(p, neighboursCustom);
-//				calculateForce(p, neighboursCustom);
-//			});
-//
-//			// Only at first frame, initialize previous position of Verlet with Euler
-//			if (time == dt) {
-//				particles.stream().forEach(p -> {
-//					if (time == dt) {
-//						Vector2D currentForce = p.getForce();
-//						double posX = p.getPosition().getX() - dt * p.getVelocity().getX();
-//						double posY = p.getPosition().getY() - dt * p.getVelocity().getY();
-//						posX += Math.pow(dt, 2) * currentForce.getX() / (2 * p.getMass());
-//						posY += Math.pow(dt, 2) * currentForce.getY() / (2 * p.getMass());
-//
-//						particleIntegrationMethods.put(p,
-//								new VerletWithNeighbours(new Vector2D(posX, posY)));
-//					}
-//				});
-//			} else {
-//				// Update position
-//				particles.stream().parallel().forEach(p -> moveParticle(p, dt));
-//			}
+			// Calculate neighbours
+			CellIndexMethod.run(particles,
+					(boxHeight * 1.1),
+					(int) Math.floor((boxHeight * 1.1) / MAX_INTERACTION_RADIUS),
+					MAX_INTERACTION_RADIUS);
 
-			// calculo nueva posicion e imprimo
-//			particles.stream().parallel().forEach(p -> {
-//				// get new X position
-//				double Ax = p.getForce().getX() / p.getMass(); // acceleration in X axis
-//				double X = p.getPosition().getX() + Ax * dt; // new X position
-//				// get new Y position
-//				double Ay = p.getForce().getY() / p.getMass(); // acceleration in Y axis
-//				double Y = p.getPosition().getY() + Ay * dt; // new Y position
-//
-//				p.setPosition(new Vector2D(X, Y));
-//			});
+			// Calculate sum of forces, including fake wall particles
+			particles.stream().parallel().forEach(p -> {
+				Set<Particle> neighboursCustom = new HashSet<>(p.getNeighbours());
+				neighboursCustom = filterNeighbors(p, neighboursCustom);
+				addFakeWallParticles(p, neighboursCustom);
+				calculateForce(p, neighboursCustom, kN, kT);
+			});
+
+			// Only at first frame, initialize previous position of Verlet with Euler
+			if (time == dt) {
+				particles.forEach(p -> {
+					if (time == dt) {
+						Vector2D currentForce = p.getForce();
+						double posX = p.getPosition().getX() - dt * p.getVelocity().getX();
+						double posY = p.getPosition().getY() - dt * p.getVelocity().getY();
+						posX += Math.pow(dt, 2) * currentForce.getX() / (2 * p.getMass());
+						posY += Math.pow(dt, 2) * currentForce.getY() / (2 * p.getMass());
+
+						particleIntegrationMethods.put(p,
+								new VerletWithNeighbours(new Vector2D(posX, posY)));
+					}
+				});
+			} else {
+				// Update position
+				particles.stream().parallel().forEach(p -> moveParticle(p, dt));
+			}
+
+			particles.stream().parallel().forEach(p -> {
+				if (p.getPosition().getY() <= 0) {
+					relocateParticle(p, particles);
+				}
+			});
 
 			if ((currentFrame % printFrame) == 0) {
-				buffer.write(String.valueOf(particles.size() + 2 + ((int) boxHeight / 5)));
+				buffer.write(String.valueOf(particles.size() + 2));
 				buffer.newLine();
 				buffer.write(String.valueOf(currentFrame));
 				buffer.newLine();
@@ -146,191 +129,146 @@ public class GravitationalGranularSilo {
 			System.out.println("Current frame: " + currentFrame);
 			currentFrame++;
 		}
+	}
+
+	private static void relocateParticle(Particle particle, List<Particle> particles) {
+
+		int maxTries = 1000;
+		int tries = 0;
+		while ((tries++ < maxTries) && !ParticleGenerator.setNewRandomPosition(particles,
+				particle,
+				new Vector2D(0.0, boxWidth),
+				new Vector2D(boxHeight * 1.1, boxHeight * 1.1),
+				MIN_DIAMETER,
+				MAX_DIAMETER)) {
+		}
+
+		if (tries == maxTries) { //TODO que haga un random sobre el x mencionado
+			particle.setPosition(new Vector2D(boxWidth / 2, boxHeight * 1.1));
+			particle.setVelocity(Vector2D.ZERO);
+		}
+
+		particleIntegrationMethods.put(particle,
+				new VerletWithNeighbours(particle.getPosition()));
 
 	}
 
+	private static Set<Particle> filterNeighbors(Particle particle, Set<Particle> neighbors) {
+		HashSet<Particle> set = new HashSet<>();
+		for (Particle neighbor : neighbors) {
+			if (particle.getPosition().distance(neighbor.getPosition()) <= (particle.getRadius() + neighbor.getRadius())) {
+				set.add(neighbor);
+			}
+		}
+//		neighbors.stream().parallel().forEach(neighbor -> {
+//			if (particle.getPosition().distance(neighbor.getPosition()) <= (particle.getRadius() + neighbor.getRadius())) {
+//				set.add(neighbor);
+//			}
+//		});
+		return set;
+	}
+
+	private static Particle findHighestParticle(List<Particle> particles, double x, double r) {
+		double aux = 0;
+		Particle p = null;
+		for (Particle particle : particles) {
+			if (Math.abs(particle.getPosition().getX() - x) < particle.getRadius() + r && particle.getPosition().getY() > aux) {
+				aux = particle.getPosition().getY();
+				p = particle;
+			}
+		}
+		return p;
+	}
 
 	/**
-	 * Calcula la sumatoria de fuerzas sobre la particula
-	 *
-	 * @param particle
-	 * @param neighbours
+	 * Calculate sum of forces
 	 */
-	private static void calculateForce(Particle particle, Set<Particle> neighbours) {
-		Vector2D F = new Vector2D(0, 0);
+	private static void calculateForce(Particle particle, Set<Particle> neighbours, double kN, double kT) {
+		Vector2D F = new Vector2D(0, particle.getMass() * G);
 		F = neighbours.stream().map(p2 -> {
-			// sacar angulo entre particulas  atam2
-			double angle = p2.getAngleWith(particle);
 
-			if (particle.getDistanceBetween(p2) <= 0.5) {
-				int a = 0;
-			}
+			// Calculate epsilon
+			double eps = particle.getRadius() + p2.getRadius() - (particle.getPosition().distance(p2.getPosition()));
 
-			// TODO CALCULATE AND PRINT WITH N WITHOUT ANGLES LIKE GERMAN TO SEE IF THEY COINCIDE
+			// Calculate Fn
+			double Fn = -kN * eps;
 
+			// Calculate x component of contact unit vector e
+			double Enx = (p2.getPosition().getX() - particle.getPosition().getX()) / (p2.getPosition().distance(particle.getPosition()));
 
-			// calculo modulo de la fuerza
-			double fraction = RM / particle.getDistanceBetween(p2);
-			double force = (12 * e / RM) * (Math.pow(fraction, 13) - Math.pow(fraction, 7));
+			// Calculate y component of contact unit vector e
+			double Eny = (p2.getPosition().getY() - particle.getPosition().getY()) / (p2.getPosition().distance(particle.getPosition()));
 
-			// descompongo force con angle para sacar f.x y f.y
-			return new Vector2D(force * Math.cos(angle), force * Math.sin(angle));
-		}).reduce(F, (F1, F2) -> F1.add(F2));
+			// Calculate Ft
+			double Ft = -kT * eps * (((particle.getVelocity().getX() - p2.getVelocity().getX()) * (-Eny))
+					+ ((particle.getVelocity().getY() - p2.getVelocity().getY()) * (Enx)));
+
+			double Fx = Fn * Enx + Ft * (-Eny);
+			double Fy = Fn * Eny + Ft * Enx;
+
+			return new Vector2D(Fx, Fy);
+		}).reduce(F, Vector2D::add);
 
 		// Particle knows its force at THIS frame
 		particle.setForce(F);
 	}
 
-
-	/**
-	 * Calcula el potencial entre dos particulas
-	 *
-	 * @param distanceAtMinimum
-	 * @param distanceBetweenParticles
-	 * @param holeDepth
-	 * @return
-	 */
-	private static double calculatePotential(double distanceAtMinimum,
-	                                         double distanceBetweenParticles,
-	                                         double holeDepth) {
-		double fraction = RM / distanceBetweenParticles;
-		return holeDepth * (Math.pow(fraction, 12) - 2.0 * Math.pow(fraction, 6));
-	}
-
-	/**
-	 * @param particle
-	 * @return
-	 */
 	private static void moveParticle(Particle particle, double dt) {
-//		neighbours = neighbours
-//				.stream()
-//				.filter(n -> !centralHoleInBetween(particle, n))
-//				.collect(Collectors.toSet());
-
-//		addFakeWallParticles(particle, neighbours);
-
 		IntegrationMethodWithNeighbours integrationMethod = particleIntegrationMethods.get(particle);
 		integrationMethod.updatePosition(particle, dt);
 	}
 
 	/**
-	 * Dada dos particulas, si estan en cuadrantes distintas
-	 *
-	 * @param particle1
-	 * @param particle2
-	 * @return
+	 * For the ones that make contact, add a fake particle to the set of neighbours.
 	 */
-	private static boolean centralHoleInBetween(Particle particle1, Particle particle2) {
-		double centralHoleLowerLimit = (boxHeight / 2) - (centralHoleUnits / 2);
-		double centralHoleHigherLimit = boxHeight - centralHoleLowerLimit;
+	private static void addFakeWallParticles(Particle particle, Set<Particle> neighbours) {
+		int fakeId = -1;
 
-		double x1 = particle1.getPosition().getX();
-		double y1 = particle1.getPosition().getY();
-		double x2 = particle2.getPosition().getX();
-		double y2 = particle2.getPosition().getY();
+		// Analyse left wall
+		if (particle.getPosition().getX() - particle.getRadius() <= 0) {
+			Particle leftWallParticle = new Particle(fakeId--, particle.getRadius(), particle.getMass());
+			leftWallParticle.setPosition(new Vector2D(-particle.getRadius(), particle.getPosition().getY()));
+			leftWallParticle.setVelocity(Vector2D.ZERO);
+			neighbours.add(leftWallParticle);
+		}
+		// Analyse right wall
+		else if (particle.getPosition().getX() + particle.getRadius() >= boxWidth) {
+			Particle rightWallParticle = new Particle(fakeId--, particle.getRadius(), particle.getMass());
+			rightWallParticle.setPosition(new Vector2D(particle.getRadius() + boxWidth, particle.getPosition().getY()));
+			rightWallParticle.setVelocity(Vector2D.ZERO);
+			neighbours.add(rightWallParticle);
+		}
 
-		// Both particles at left or right, one above the other
-		if (x1 == x2) return false;
+		double diameterStart = (boxWidth / 2 - boxDiameter / 2);
+		boolean outsideGap = particle.getPosition().getX() < diameterStart || particle.getPosition().getX() > (diameterStart + boxDiameter);
 
-		// Calculate line between particles' positions
-		double m = (y2 - y1) / (x2 - x1);
-		double b = y1 - m * x1;
+		double bottomWall = boxHeight / 10;
+		double upperWall = boxHeight * 1.1;
 
-		// Calculate central hole's height is in that line
-		double xCentralHole = boxWidth / 2;
-		double yCentralHoleBetweenParticles = m * xCentralHole + b;
+		// Analyse bottom wall
+		if (particle.getPosition().getY() >= bottomWall
+				&& (particle.getPosition().getY() - particle.getRadius() <= bottomWall)
+				&& outsideGap) {
+//				&& particle.getVelocity().getY() < 0) {
+			Particle bottomWallParticle = new Particle(fakeId--, particle.getRadius(), particle.getMass());
+			bottomWallParticle.setPosition(new Vector2D(particle.getPosition().getX(), bottomWall - particle.getRadius()));
+			bottomWallParticle.setVelocity(Vector2D.ZERO);
+			neighbours.add(bottomWallParticle);
+		}
+		// Analyse top wall
+		else if ((particle.getPosition().getY() + particle.getRadius()) >= upperWall) {
+			Particle topWallParticle = new Particle(fakeId--, particle.getRadius(), particle.getMass());
+			topWallParticle.setPosition(new Vector2D(particle.getPosition().getX(), particle.getRadius() + upperWall));
+			topWallParticle.setVelocity(Vector2D.ZERO);
+			neighbours.add(topWallParticle);
+		}
 
-		// Return true if central hole's y is between the gap
-		// And particles are at different sides
-		return yCentralHoleBetweenParticles < centralHoleHigherLimit
-				&& yCentralHoleBetweenParticles > centralHoleLowerLimit
-				&& ((x1 < boxWidth / 2 && x2 > boxWidth / 2)
-				|| (x1 > boxWidth / 2 && x2 < boxWidth / 2));
+
+		// TODO: y las del borde del gap? puntual fija masa y radio 0
 	}
-
-//	/**
-//	 * Agrega en neighbours set las particulas falsas necesarias
-//	 *
-//	 * @param particle
-//	 * @param neighbours
-//	 */
-//	private static void addFakeWallParticles(Particle particle, Set<Particle> neighbours) {
-//		double centralHoleLowerLimit = (boxHeight / 2) - (centralHoleUnits / 2);
-//		double centralHoleHigherLimit = (boxHeight / 2) + (centralHoleUnits / 2);
-//
-//		int fakeId = -1;
-//
-//		// Analyse left wall
-//		double distanceToLeftWall = particle.getPosition().getX();
-//		if (distanceToLeftWall <= interactionRadius) {
-//			// Add fake wall particle to its left at the box's left wall
-//			Particle leftWallParticle = new Particle(fakeId--, Double.POSITIVE_INFINITY);
-//			leftWallParticle.setPosition(new Vector2D(0.0, particle.getPosition().getY()));
-//			leftWallParticle.setVelocity(Vector2D.ZERO);
-//			neighbours.add(leftWallParticle);
-//		}
-//
-//		// Analyse right wall
-//		double distanceToRightWall = boxWidth - particle.getPosition().getX();
-//		if (distanceToRightWall <= interactionRadius) {
-//			// Add fake wall particle to its left at the box's right wall
-//			Particle rightWallParticle = new Particle(fakeId--, Double.POSITIVE_INFINITY);
-//			rightWallParticle.setPosition(new Vector2D(boxWidth, particle.getPosition().getY()));
-//			rightWallParticle.setVelocity(Vector2D.ZERO);
-//			neighbours.add(rightWallParticle);
-//		}
-//
-//		// Analyse up wall
-//		double distanceToTopWall = boxHeight - particle.getPosition().getY();
-//		if (distanceToTopWall <= interactionRadius) {
-//			Particle topWallParticle = new Particle(fakeId--, Double.POSITIVE_INFINITY);
-//			topWallParticle.setPosition(new Vector2D(particle.getPosition().getX(), boxHeight));
-//			topWallParticle.setVelocity(Vector2D.ZERO);
-//			neighbours.add(topWallParticle);
-//		}
-//
-//		// Analyse down wall
-//		double distanceToLowerWall = particle.getPosition().getY();
-//		if (distanceToLowerWall <= interactionRadius) {
-//			Particle lowerWallParticle = new Particle(fakeId--, Double.POSITIVE_INFINITY);
-//			lowerWallParticle.setPosition(new Vector2D(particle.getPosition().getX(), 0.0));
-//			lowerWallParticle.setVelocity(Vector2D.ZERO);
-//			neighbours.add(lowerWallParticle);
-//		}
-//
-//		// Particle between ys of central hole
-//		if (particle.getPosition().getY() < centralHoleHigherLimit
-//				&& particle.getPosition().getY() > centralHoleLowerLimit) {
-//			Particle higherHoleWallParticle = new Particle(fakeId--, Double.POSITIVE_INFINITY);
-//			higherHoleWallParticle.setPosition(new Vector2D(boxWidth / 2, centralHoleHigherLimit));
-//			higherHoleWallParticle.setVelocity(Vector2D.ZERO);
-//			double particleDistance = particle.getPosition().distance(higherHoleWallParticle.getPosition());
-//			if (particleDistance <= interactionRadius) {
-//				neighbours.add(higherHoleWallParticle);
-//			}
-//
-//			Particle lowerHoleWallParticle = new Particle(fakeId-- / 2, Double.POSITIVE_INFINITY);
-//			lowerHoleWallParticle.setPosition(new Vector2D(boxWidth / 2, centralHoleLowerLimit));
-//			lowerHoleWallParticle.setVelocity(Vector2D.ZERO);
-//			particleDistance = particle.getPosition().distance(lowerHoleWallParticle.getPosition());
-//			if (particleDistance <= interactionRadius) {
-//				neighbours.add(lowerHoleWallParticle);
-//			}
-//		} else {
-//			// Particle close to central line
-//			Particle middleWallParticle = new Particle(fakeId--, Double.POSITIVE_INFINITY);
-//			middleWallParticle.setPosition(new Vector2D(boxWidth / 2, particle.getPosition().getY()));
-//			middleWallParticle.setVelocity(Vector2D.ZERO);
-//			double particleDistance = particle.getPosition().distance(middleWallParticle.getPosition());
-//			if (particleDistance <= interactionRadius) {
-//				neighbours.add(middleWallParticle);
-//			}
-//		}
-//	}
 
 	private static void printFirstFrame(BufferedWriter buff, List<Particle> particles) throws IOException {
 		// Print dummy particles to simulation output file
-//		buff.write(String.valueOf(particles.size() + 2 + ((int) boxHeight / 5)));
 		buff.write(String.valueOf(particles.size() + 2));
 		buff.newLine();
 		buff.write("0");
@@ -351,9 +289,9 @@ public class GravitationalGranularSilo {
 		// Particles for fixing Ovito grid
 		Particle dummy1 = new Particle(-100, 0, 0);
 		Particle dummy2 = new Particle(-101, 0, 0);
-		dummy1.setPosition(new Vector2D(0, 0));
+		dummy1.setPosition(new Vector2D(0, boxHeight / 10));
 		dummy1.setVelocity(new Vector2D(0, 0));
-		dummy2.setPosition(new Vector2D(boxWidth, boxHeight));
+		dummy2.setPosition(new Vector2D(boxWidth, boxHeight + (boxHeight / 10)));
 		dummy2.setVelocity(new Vector2D(0, 0));
 		buff.write(particleToString(dummy1));
 		buff.write(particleToString(dummy2));
