@@ -11,6 +11,7 @@ public class Particle implements Cloneable {
 	private final int id;
 	private double radius;
 	private double mass;
+	private double normalForce;
 	private Vector2D position;
 	private Vector2D velocity;
 	private Vector2D force;
@@ -20,21 +21,8 @@ public class Particle implements Cloneable {
 		this.id = id;
 		this.radius = radius;
 		this.mass = mass;
+		this.normalForce = 0.0;
 		this.neighbours = new HashSet<>();
-	}
-
-	public double getDistanceBetween(Particle particle) {
-		Vector2D particlePosition = particle.getPosition();
-		return Math.sqrt(Math.pow(position.getX() - particlePosition.getX(), 2)
-				+ Math.pow(position.getY() - particlePosition.getY(), 2));
-	}
-
-	public void addNeighbour(Particle neighbour) {
-		this.neighbours.add(neighbour);
-	}
-
-	private double getKineticEnergy() {
-		return 0.5 * mass * velocity.getNormSq();
 	}
 
 	@Override
@@ -109,7 +97,33 @@ public class Particle implements Cloneable {
 		this.neighbours = new HashSet<>();
 	}
 
-	public double getAngleWith(Particle p2) {
-		return Math.atan2(p2.position.getY() - position.getY(), p2.position.getX() - position.getX());
+	public double getDistanceBetween(Particle particle) {
+		Vector2D particlePosition = particle.getPosition();
+		return Math.sqrt(Math.pow(position.getX() - particlePosition.getX(), 2)
+				+ Math.pow(position.getY() - particlePosition.getY(), 2));
+	}
+
+	public void addNeighbour(Particle neighbour) {
+		this.neighbours.add(neighbour);
+	}
+
+	public double calculatePressure() {
+		return this.normalForce / calculatePerimeter();
+	}
+
+	public void addNormalForce(double neighbourNormalForce) {
+		this.normalForce += neighbourNormalForce;
+	}
+
+	public void resetNormalForce() {
+		this.normalForce = 0.0;
+	}
+
+	private double calculatePerimeter() {
+		return 2 * Math.PI * radius;
+	}
+
+	private double getKineticEnergy() {
+		return 0.5 * mass * velocity.getNormSq();
 	}
 }

@@ -20,6 +20,8 @@ public class GravitationalGranularSilo {
 
 	private static final double MAX_INTERACTION_RADIUS = 0.03 / 2;
 
+	private static double currentMaxPressure = 0.0;
+
 	// Initial State
 	private static double time = 0.0;
 
@@ -76,11 +78,15 @@ public class GravitationalGranularSilo {
 					MAX_INTERACTION_RADIUS);
 
 			// Calculate sum of forces, including fake wall particles
+			int finalCurrentFrame = currentFrame;
 			particles.stream().parallel().forEach(p -> {
 				Set<Particle> neighboursCustom = new HashSet<>(p.getNeighbours());
 				neighboursCustom = filterNeighbors(p, neighboursCustom);
 				addFakeWallParticles(p, neighboursCustom);
 				calculateForce(p, neighboursCustom, kN, kT);
+				if (p.calculatePressure() != 0.0 && (finalCurrentFrame % printFrame) == 0) {
+					int a = 0;
+				}
 			});
 
 			// Only at first frame, initialize previous position of Verlet with Euler
@@ -110,6 +116,9 @@ public class GravitationalGranularSilo {
 				}
 				p.clearNeighbours();
 			});
+
+			// Save current max pressure for color calculation
+			currentMaxPressure = Collections.max(particles, Comparator.comparing(Particle::calculatePressure)).calculatePressure();
 
 			if ((currentFrame % printFrame) == 0) {
 				buffer.write(String.valueOf(particles.size() + 2));
@@ -210,6 +219,30 @@ public class GravitationalGranularSilo {
 
 		// Particle knows its force at THIS frame
 		particle.setForce(F);
+
+		// Add to particle's normal force for pressure calculation later on
+		particle.resetNormalForce();
+		Vector2D normalForce = new Vector2D(0.0, 0.0);
+		normalForce = neighbours.stream().parallel().map(n -> {
+			// Calculate distance between centers
+			double distance = particle.getPosition().distance(n.getPosition());
+
+			// Calculate epsilon
+			double eps = particle.getRadius() + n.getRadius() - distance;
+
+			if (eps > 0.0) {
+				Vector2D relativeVector = n.getPosition().subtract(particle.getPosition());
+				Vector2D normalVersor = relativeVector.normalize();
+
+				// Calculate Fn
+				double Fn = -kN * eps;
+
+				return normalVersor.scalarMultiply(Fn);
+			} else {
+				return Vector2D.ZERO;
+			}
+		}).reduce(normalForce, Vector2D::add);
+		particle.addNormalForce(normalForce.getNorm());
 	}
 
 	private static void moveParticle(Particle particle, double dt) {
@@ -319,12 +352,20 @@ public class GravitationalGranularSilo {
 	}
 
 	private static String particleToString(Particle p) {
+		double pressure;
+		if (Double.valueOf(currentMaxPressure).equals(0.0)) {
+			pressure = p.calculatePressure();
+		} else {
+			pressure = p.calculatePressure() / currentMaxPressure;
+		}
 		return p.getId() + " " +
 				p.getRadius() + " " +
 				p.getPosition().getX() + " " +
 				p.getPosition().getY() + " " +
 				p.getVelocity().getX() + " " +
-				p.getVelocity().getY() + " \n"
-				;
+				p.getVelocity().getY() + " " +
+				255 * pressure + " " +
+				0 + " " +
+				255 * (1 - pressure) + " \n";
 	}
 }
