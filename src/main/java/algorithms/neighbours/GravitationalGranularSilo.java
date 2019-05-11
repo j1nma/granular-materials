@@ -20,9 +20,6 @@ public class GravitationalGranularSilo {
 
 	private static final double MAX_INTERACTION_RADIUS = 0.03 / 2;
 
-	private static final double MIN_DIAMETER = 0.02;
-	private static final double MAX_DIAMETER = 0.03;
-
 	// Initial State
 	private static double time = 0.0;
 
@@ -47,12 +44,11 @@ public class GravitationalGranularSilo {
 
 //		Particle p1 = particles.get(0);
 //		Particle p2 = particles.get(1);
-//		p1.setPosition(new Vector2D(0.05 - 0.02, 0.5));
-////		p1.setPosition(new Vector2D(boxWidth / 2, boxHeight / 1.7));
+//		p1.setPosition(new Vector2D(0.05 - 0.02, 0.2));
 //		p1.setRadius(0.014);
 //		p2.setRadius(0.014);
-//		p2.setPosition(new Vector2D(0.05 - 0.02, 0.3));
-//		p1.setVelocity(new Vector2D(0, 0));
+//		p2.setPosition(new Vector2D(boxWidth / 2, 0.2));
+//		p1.setVelocity(new Vector2D(-0.3, -0.3));
 //		p2.setVelocity(new Vector2D(0, 0));
 //		List<Particle> test2particles = new ArrayList<>();
 //		test2particles.add(p1);
@@ -62,7 +58,8 @@ public class GravitationalGranularSilo {
 		// Print to buffer and set dummy particles for Ovito grid
 		printFirstFrame(buffer, particles);
 
-		Criteria timeCriteria = new TimeCriteria(0.25);
+		limitTime = 2;
+		Criteria timeCriteria = new TimeCriteria(limitTime);
 
 		// Print frame
 		int currentFrame = 1;
@@ -105,10 +102,13 @@ public class GravitationalGranularSilo {
 				particles.stream().parallel().forEach(p -> moveParticle(p, dt));
 			}
 
+			// Relocate particles that go outside box a distance of L/10 and clear neighbours
+			final List<Particle> finalParticles = particles;
 			particles.stream().parallel().forEach(p -> {
 				if (p.getPosition().getY() <= 0) {
-					relocateParticle(p, particles);
+					relocateParticle(p, finalParticles);
 				}
+				p.clearNeighbours();
 			});
 
 			if ((currentFrame % printFrame) == 0) {
@@ -126,25 +126,33 @@ public class GravitationalGranularSilo {
 				});
 			}
 
-			System.out.println("Current frame: " + currentFrame);
+			System.out.println("Current progress: " + 100 * (time / limitTime));
 			currentFrame++;
 		}
 	}
 
+	@SuppressWarnings({"StatementWithEmptyBody", "SuspiciousNameCombination"})
 	private static void relocateParticle(Particle particle, List<Particle> particles) {
 
 		int maxTries = 1000;
 		int tries = 0;
+
+		// Save previous radius since call to setNewRandomPosition changes it
+		double previousRadius = particle.getRadius();
+
 		while ((tries++ < maxTries) && !ParticleGenerator.setNewRandomPosition(particles,
 				particle,
 				new Vector2D(0.0, boxWidth),
-				new Vector2D(boxHeight * 1.1, boxHeight * 1.1),
-				MIN_DIAMETER,
-				MAX_DIAMETER)) {
+				new Vector2D(boxHeight * 0.8, boxHeight * 1.1),
+				particle.getRadius())) {
 		}
 
-		if (tries == maxTries) { //TODO que haga un random sobre el x mencionado
-			particle.setPosition(new Vector2D(boxWidth / 2, boxHeight * 1.1));
+		particle.setRadius(previousRadius);
+
+		if (tries == maxTries) {
+			Random r = new Random();
+			double x = r.nextDouble() * (boxWidth - 2 * particle.getRadius()) + particle.getRadius();
+			particle.setPosition(new Vector2D(x, boxHeight * 1.1));
 			particle.setVelocity(Vector2D.ZERO);
 		}
 
@@ -155,29 +163,12 @@ public class GravitationalGranularSilo {
 
 	private static Set<Particle> filterNeighbors(Particle particle, Set<Particle> neighbors) {
 		HashSet<Particle> set = new HashSet<>();
-		for (Particle neighbor : neighbors) {
+		neighbors.stream().parallel().forEach(neighbor -> {
 			if (particle.getPosition().distance(neighbor.getPosition()) <= (particle.getRadius() + neighbor.getRadius())) {
 				set.add(neighbor);
 			}
-		}
-//		neighbors.stream().parallel().forEach(neighbor -> {
-//			if (particle.getPosition().distance(neighbor.getPosition()) <= (particle.getRadius() + neighbor.getRadius())) {
-//				set.add(neighbor);
-//			}
-//		});
+		});
 		return set;
-	}
-
-	private static Particle findHighestParticle(List<Particle> particles, double x, double r) {
-		double aux = 0;
-		Particle p = null;
-		for (Particle particle : particles) {
-			if (Math.abs(particle.getPosition().getX() - x) < particle.getRadius() + r && particle.getPosition().getY() > aux) {
-				aux = particle.getPosition().getY();
-				p = particle;
-			}
-		}
-		return p;
 	}
 
 	/**
@@ -187,26 +178,34 @@ public class GravitationalGranularSilo {
 		Vector2D F = new Vector2D(0, particle.getMass() * G);
 		F = neighbours.stream().map(p2 -> {
 
+			// Calculate distance between centers
+			double distance = particle.getPosition().distance(p2.getPosition());
+
 			// Calculate epsilon
-			double eps = particle.getRadius() + p2.getRadius() - (particle.getPosition().distance(p2.getPosition()));
+			double eps = particle.getRadius() + p2.getRadius() - distance;
 
-			// Calculate Fn
-			double Fn = -kN * eps;
+			if (eps > 0.0) {
+				// Calculate Fn
+				double Fn = -kN * eps;
 
-			// Calculate x component of contact unit vector e
-			double Enx = (p2.getPosition().getX() - particle.getPosition().getX()) / (p2.getPosition().distance(particle.getPosition()));
+				// Calculate x component of contact unit vector e
+				double Enx = (p2.getPosition().getX() - particle.getPosition().getX()) / distance;
 
-			// Calculate y component of contact unit vector e
-			double Eny = (p2.getPosition().getY() - particle.getPosition().getY()) / (p2.getPosition().distance(particle.getPosition()));
+				// Calculate y component of contact unit vector e
+				double Eny = (p2.getPosition().getY() - particle.getPosition().getY()) / distance;
 
-			// Calculate Ft
-			double Ft = -kT * eps * (((particle.getVelocity().getX() - p2.getVelocity().getX()) * (-Eny))
-					+ ((particle.getVelocity().getY() - p2.getVelocity().getY()) * (Enx)));
+				// Calculate Ft
+				Vector2D relativeVelocity = particle.getVelocity().subtract(p2.getVelocity());
+				Vector2D tangentVector = new Vector2D(-Eny, Enx);
+				double Ft = -kT * eps * (relativeVelocity.dotProduct(tangentVector));
 
-			double Fx = Fn * Enx + Ft * (-Eny);
-			double Fy = Fn * Eny + Ft * Enx;
+				double Fx = Fn * Enx + Ft * (-Eny);
+				double Fy = Fn * Eny + Ft * Enx;
 
-			return new Vector2D(Fx, Fy);
+				return new Vector2D(Fx, Fy);
+			} else {
+				return new Vector2D(0.0, 0.0);
+			}
 		}).reduce(F, Vector2D::add);
 
 		// Particle knows its force at THIS frame
