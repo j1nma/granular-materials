@@ -12,7 +12,7 @@ import java.util.*;
 
 public class GravitationalGranularSilo {
 
-	private static double boxHeight = 1.0;
+	private static double boxHeight = 1.5;
 	private static double boxWidth = 0.3;
 	private static double boxDiameter = 0.15;
 
@@ -246,24 +246,46 @@ public class GravitationalGranularSilo {
 
 		// Analyse bottom wall
 		if (particle.getPosition().getY() >= bottomWall
-				&& (particle.getPosition().getY() - particle.getRadius() <= bottomWall)
-				&& outsideGap) {
+				&& particle.getPosition().getY() - particle.getRadius() <= bottomWall) {
 //				&& particle.getVelocity().getY() < 0) {
-			Particle bottomWallParticle = new Particle(fakeId--, particle.getRadius(), particle.getMass());
-			bottomWallParticle.setPosition(new Vector2D(particle.getPosition().getX(), bottomWall - particle.getRadius()));
-			bottomWallParticle.setVelocity(Vector2D.ZERO);
-			neighbours.add(bottomWallParticle);
+			if (outsideGap) {
+				Particle bottomWallParticle = new Particle(fakeId--, particle.getRadius(), particle.getMass());
+				bottomWallParticle.setPosition(new Vector2D(particle.getPosition().getX(), bottomWall - particle.getRadius()));
+				bottomWallParticle.setVelocity(Vector2D.ZERO);
+				neighbours.add(bottomWallParticle);
+			} else {
+				// TODO: y las del borde del gap? puntual fija masa y radio 0
+				if (boxDiameter > 0.0) {
+					if (particle.getPosition().getX() - particle.getRadius() <= diameterStart
+							&& particle.getPosition().distance(new Vector2D(diameterStart, bottomWall)) < particle.getRadius()) {
+						Particle leftDiameterStartParticle = new Particle(fakeId--, 0.0, 0.0);
+						leftDiameterStartParticle.setPosition(new Vector2D(diameterStart, bottomWall));
+						leftDiameterStartParticle.setVelocity(Vector2D.ZERO);
+						neighbours.add(leftDiameterStartParticle);
+					} else if (particle.getPosition().getX() + particle.getRadius() >= diameterStart + boxDiameter
+							&& particle.getPosition().distance(new Vector2D(diameterStart + boxDiameter, bottomWall)) < particle.getRadius()) {
+						Particle rightDiameterStartParticle = new Particle(fakeId--, 0.0, 0.0);
+						rightDiameterStartParticle.setPosition(new Vector2D(diameterStart + boxDiameter, bottomWall));
+						rightDiameterStartParticle.setVelocity(Vector2D.ZERO);
+						neighbours.add(rightDiameterStartParticle);
+					}
+				} else {
+					if (particle.getPosition().getY() - particle.getRadius() <= bottomWall) {
+						Particle closedDiameterParticle = new Particle(fakeId--, particle.getRadius(), particle.getMass());
+						closedDiameterParticle.setPosition(new Vector2D(particle.getPosition().getX(), bottomWall - particle.getRadius()));
+						closedDiameterParticle.setVelocity(Vector2D.ZERO);
+						neighbours.add(closedDiameterParticle);
+					}
+				}
+			}
 		}
 		// Analyse top wall
-		else if ((particle.getPosition().getY() + particle.getRadius()) >= upperWall) {
+		else if (particle.getPosition().getY() + particle.getRadius() >= upperWall) {
 			Particle topWallParticle = new Particle(fakeId--, particle.getRadius(), particle.getMass());
 			topWallParticle.setPosition(new Vector2D(particle.getPosition().getX(), particle.getRadius() + upperWall));
 			topWallParticle.setVelocity(Vector2D.ZERO);
 			neighbours.add(topWallParticle);
 		}
-
-
-		// TODO: y las del borde del gap? puntual fija masa y radio 0
 	}
 
 	private static void printFirstFrame(BufferedWriter buff, List<Particle> particles) throws IOException {

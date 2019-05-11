@@ -17,7 +17,7 @@ public class App {
 	private static final String OUTPUT_DIRECTORY = "./output";
 	private static final String OVITO_FILE = OUTPUT_DIRECTORY + "/ovito_file.txt";
 
-	private static final int N = 300;
+	private static final int N = 400;
 	private static final double MIN_PARTICLE_DIAMETER = 0.02;
 	private static final double MAX_PARTICLE_DIAMETER = 0.03;
 	private static final double PARTICLE_MASS = 0.01;
