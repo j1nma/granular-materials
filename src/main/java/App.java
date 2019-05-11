@@ -50,6 +50,10 @@ public class App {
 			printUsage(parser);
 		}
 
+		if (!parser.containsExplicitOption("deltaT")) {
+			options.deltaT = 0.01 * Math.sqrt(PARTICLE_MASS / options.kN);
+		}
+
 		runAlgorithm(
 				particleGenerator.generate(N, options.length, options.width, MIN_PARTICLE_DIAMETER, MAX_PARTICLE_DIAMETER, PARTICLE_MASS),
 				options.limitTime,
@@ -75,9 +79,6 @@ public class App {
 
 		FileWriter fw = new FileWriter(String.valueOf(Paths.get(OVITO_FILE)));
 		BufferedWriter writeFileBuffer = new BufferedWriter(fw);
-
-		deltaT = 0.01 * Math.sqrt(particles.get(0).getMass() / kN);
-		System.out.println("Delta t: " + deltaT);
 
 		GravitationalGranularSilo.run(
 				particles,

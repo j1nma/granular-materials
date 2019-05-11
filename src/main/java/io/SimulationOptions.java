@@ -30,7 +30,7 @@ public class SimulationOptions extends OptionsBase {
 			abbrev = 't',
 			help = "Simulation delta time (s).",
 			category = "startup",
-			defaultValue = "0.001"
+			defaultValue = "0.00001"
 	)
 	public double deltaT;
 
