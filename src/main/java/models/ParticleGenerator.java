@@ -33,8 +33,7 @@ public class ParticleGenerator {
 						p,
 						new Vector2D(0.0, areaWidth),
 						new Vector2D(areaLength / 10, areaLength * 1.1),
-						minDiameter,
-						maxDiameter);
+						(minDiameter + (maxDiameter - minDiameter) * new Random().nextDouble()) / 2);
 			}
 			particles.add(p);
 		}
@@ -43,7 +42,7 @@ public class ParticleGenerator {
 	}
 
 	/**
-	 * Assign new empty position to particle
+	 * Assign new random position to particle at empty space between xRange and yRange
 	 *
 	 * @param particles
 	 * @param particle
@@ -55,13 +54,11 @@ public class ParticleGenerator {
 	                                           Particle particle,
 	                                           Vector2D xRange,
 	                                           Vector2D yRange,
-	                                           double minDiameter,
-	                                           double maxDiameter) {
+	                                           double radius) {
 		Random r = new Random();
-		double radius, x, y;
+		double x, y;
 
-		// Generate random radius and position
-		radius = (minDiameter + (maxDiameter - minDiameter) * r.nextDouble()) / 2;
+		// Generate random position
 		x = r.nextDouble() * (xRange.getY() - 2 * radius) + radius + xRange.getX();
 		double areaLength = yRange.getY() - yRange.getX();
 		y = r.nextDouble() * (areaLength - 2 * radius) + radius + yRange.getX();
@@ -87,7 +84,6 @@ public class ParticleGenerator {
 
 		return validPosition;
 	}
-
 
 	private static boolean isValidPosition(double otherX, double otherY, double otherRadius, double newX, double newY, double newRadius) {
 		return (Math.pow(otherX - newX, 2) + Math.pow(otherY - newY, 2)) > Math.pow(otherRadius + newRadius, 2);
