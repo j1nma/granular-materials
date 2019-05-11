@@ -76,6 +76,9 @@ public class App {
 		FileWriter fw = new FileWriter(String.valueOf(Paths.get(OVITO_FILE)));
 		BufferedWriter writeFileBuffer = new BufferedWriter(fw);
 
+		deltaT = 0.01 * Math.sqrt(particles.get(0).getMass() / kN);
+		System.out.println("Delta t: " + deltaT);
+
 		GravitationalGranularSilo.run(
 				particles,
 				writeFileBuffer,
