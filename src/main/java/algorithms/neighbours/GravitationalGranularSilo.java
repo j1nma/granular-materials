@@ -32,6 +32,7 @@ public class GravitationalGranularSilo {
 	public static void run(
 			List<Particle> particles,
 			BufferedWriter buffer,
+			BufferedWriter energyBuffer,
 			double limitTime,
 			double dt,
 			double printDeltaT,
@@ -122,13 +123,21 @@ public class GravitationalGranularSilo {
 				buffer.write(String.valueOf(currentFrame));
 				buffer.newLine();
 				printGridDummyParticles(buffer);
+
+				AtomicReference<Double> totalKinetic = new AtomicReference<>(0.0);
+
 				particles.stream().parallel().forEach(p -> {
 					try {
 						buffer.write(particleToString(p));
 					} catch (IOException e1) {
 						e1.printStackTrace();
 					}
+
+					totalKinetic.accumulateAndGet(p.getKineticEnergy(), (x, y) -> x + y);
 				});
+
+				energyBuffer.write(String.valueOf(time) + " " + String.valueOf(totalKinetic.get()));
+				energyBuffer.newLine();
 			}
 
 			System.out.println("Current progress: " + 100 * (time / limitTime));
