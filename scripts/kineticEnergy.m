@@ -4,6 +4,11 @@ function kineticEnergy
 	time = [0.0];
 	energy = [0.0];
 
+	# Read N
+    initialLine = fgetl(fid);
+    [N] = strsplit(initialLine(1:end), " "){1,:};
+    N = str2num(N);
+
 	# Read initial energy
 	initialEnergy = fgetl(fid);
 	[initialT initialE] = strsplit(initialEnergy(1:end), " "){1,:};
@@ -21,21 +26,17 @@ function kineticEnergy
 
 	fclose(fid);
 
-    index = 0;
-	#color='rmbcgyrmbc';
-    markers = '.+*oxsd^v><ph';
-    #props = {"color", color(index+1), "marker", markers(index+1), 'LineStyle', 'none'};
-    props = {"marker", markers(index+1), 'LineStyle', 'none'};
+    props = {"marker", '.', 'LineStyle', 'none'};
     h = plot(time, energy);
     set(h, props{:})
-    xlabel("Tiempo (s)", 'fontsize', 16);
-    ylabel("Energía cinética (J)", 'fontsize', 16);
-    #set(gca, 'fontsize', 18);
-    axis([0 2])
+    xlabel("Tiempo (s)");
+    ylabel("log_{10}(Energía cinética) (J)");
+    set(gca, "yticklabel", num2str(get(gca, "ytick"), '%.e|'))
+    axis([0 round(time(end))])
     grid on
 
     hold all
 
-	print("./output/kineticEnergy.png", "-dpngcairo", "-F:14")
+	print(sprintf("./output/kineticEnergy-N=%d.png", N), "-dpngcairo", "-F:14")
 end
 
