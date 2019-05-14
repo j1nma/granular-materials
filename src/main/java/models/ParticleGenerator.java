@@ -35,7 +35,8 @@ public class ParticleGenerator {
 						new Vector2D(areaLength / 10, areaLength * 1.1),
 						(minDiameter + (maxDiameter - minDiameter) * new Random().nextDouble()) / 2);
 			}
-			particles.add(p);
+			if (validPosition)
+				particles.add(p);
 		}
 
 		return particles;
