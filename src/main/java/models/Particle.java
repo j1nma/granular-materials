@@ -108,7 +108,7 @@ public class Particle implements Cloneable {
 	}
 
 	public double calculatePressure() {
-		return this.normalForce / calculatePerimeter();
+		return Math.abs(this.normalForce) / calculatePerimeter();
 	}
 
 	public void addNormalForce(double neighbourNormalForce) {
