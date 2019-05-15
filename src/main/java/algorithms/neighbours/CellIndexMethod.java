@@ -74,7 +74,8 @@ class CellIndexMethod {
 			Particle neighbourParticle = neighbourCellParticle.particle;
 			if (neighbourParticle.getId() != particle.getId()) {
 				double distance = particle.getDistanceBetween(neighbourParticle);
-				if (distance < rc) {
+				if (distance < particle.getRadius() + neighbourParticle.getRadius()) {
+//				if (distance < rc) {
 					// Mutually add both particles as neighbours
 					particle.addNeighbour(neighbourParticle);
 					neighbourParticle.addNeighbour(particle);
