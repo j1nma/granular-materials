@@ -14,16 +14,13 @@ class CellIndexMethod {
 	 * A CellParticle contains a Particle and the cell's position.
 	 */
 	private static List<List<CellParticle>> cells = new ArrayList<>();
-	private static double rc;
 	private static int M;
 
 	static void run(List<Particle> particles,
 	                double boxSide,
-	                int matrixSize,
-	                double interactionRadius) {
+	                int matrixSize) {
 
 		cells = new ArrayList<>();
-		rc = interactionRadius;
 		M = matrixSize;
 
 		for (int i = 0; i < M * M; i++)
