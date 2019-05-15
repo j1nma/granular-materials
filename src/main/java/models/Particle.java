@@ -111,8 +111,8 @@ public class Particle implements Cloneable {
 		return Math.abs(this.normalForce) / calculatePerimeter();
 	}
 
-	public void addNormalForce(double neighbourNormalForce) {
-		this.normalForce += neighbourNormalForce;
+	public void setNormalForce(double neighbourNormalForce) {
+		this.normalForce = neighbourNormalForce;
 	}
 
 	public void resetNormalForce() {
