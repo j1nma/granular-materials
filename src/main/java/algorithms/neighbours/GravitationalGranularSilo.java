@@ -67,18 +67,17 @@ public class GravitationalGranularSilo {
 		int currentFrame = 1;
 		int printFrame = (int) Math.ceil(printDeltaT / dt);
 
-
 		while (!timeCriteria.isDone(particles, time)) {
 			time += dt;
 
 			// Calculate neighbours
 			CellIndexMethod.run(particles,
 					(boxHeight * 1.1),
-					(int) Math.floor((boxHeight * 1.1) / (2 * MAX_INTERACTION_RADIUS)),
-					2 * MAX_INTERACTION_RADIUS);
+					(int) Math.floor((boxHeight * 1.1) / (2 * MAX_INTERACTION_RADIUS))
+			);
 
 			// Calculate sum of forces, including fake wall particles
-			particles.stream().forEach(p -> {
+			particles.stream().parallel().forEach(p -> {
 				Set<Particle> neighboursCustom = new HashSet<>(p.getNeighbours());
 				neighboursCustom = filterNeighbors(p, neighboursCustom);
 				addFakeWallParticles(p, neighboursCustom);
@@ -131,7 +130,7 @@ public class GravitationalGranularSilo {
 				});
 			}
 
-//			System.out.println("Current progress: " + 100 * (time / limitTime));
+			System.out.println("Current progress: " + 100 * (time / limitTime));
 			currentFrame++;
 		}
 	}
@@ -168,7 +167,7 @@ public class GravitationalGranularSilo {
 
 	private static Set<Particle> filterNeighbors(Particle particle, Set<Particle> neighbors) {
 		HashSet<Particle> set = new HashSet<>();
-		neighbors.stream().parallel().forEach(neighbor -> {
+		neighbors.forEach(neighbor -> {
 			if (particle.getPosition().distance(neighbor.getPosition()) <= (particle.getRadius() + neighbor.getRadius())) {
 				set.add(neighbor);
 			}
