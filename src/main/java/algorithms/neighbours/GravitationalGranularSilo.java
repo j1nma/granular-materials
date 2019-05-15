@@ -9,6 +9,7 @@ import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class GravitationalGranularSilo {
 
@@ -179,6 +180,11 @@ public class GravitationalGranularSilo {
 	 * Calculate sum of forces
 	 */
 	private static void calculateForce(Particle particle, Set<Particle> neighbours, double kN, double kT) {
+		// Particle normal force reset and accumulator
+		particle.resetNormalForce();
+		AtomicReference<Double> atomicNormalForce = new AtomicReference<>(0.0);
+
+		// Particle force calculation
 		Vector2D F = new Vector2D(0, particle.getMass() * G);
 		F = neighbours.stream().map(p2 -> {
 
@@ -206,6 +212,8 @@ public class GravitationalGranularSilo {
 				double Fx = Fn * Enx + Ft * (-Eny);
 				double Fy = Fn * Eny + Ft * Enx;
 
+				atomicNormalForce.accumulateAndGet(Fn, (x, y) -> x + y);
+
 				return new Vector2D(Fx, Fy);
 			} else {
 				return new Vector2D(0.0, 0.0);
@@ -215,24 +223,8 @@ public class GravitationalGranularSilo {
 		// Particle knows its force at THIS frame
 		particle.setForce(F);
 
-		// Add to particle's normal force for pressure calculation later on
-		particle.resetNormalForce();
-		Double normalForce = 0.0;
-		normalForce = neighbours.stream().map(n -> {
-			// Calculate distance between centers
-			double distance = particle.getPosition().distance(n.getPosition());
-
-			// Calculate epsilon
-			double eps = particle.getRadius() + n.getRadius() - distance;
-
-			if (eps > 0.0) {
-				// Calculate Fn
-				return -kN * eps;
-			} else {
-				return 0.0;
-			}
-		}).reduce(normalForce, Double::sum);
-		particle.addNormalForce(normalForce);
+		// Set particle's normal force for pressure calculation later on
+		particle.setNormalForce(atomicNormalForce.get());
 	}
 
 	private static void moveParticle(Particle particle, double dt) {
