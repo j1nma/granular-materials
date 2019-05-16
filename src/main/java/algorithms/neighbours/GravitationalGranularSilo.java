@@ -33,6 +33,7 @@ public class GravitationalGranularSilo {
 			List<Particle> particles,
 			BufferedWriter buffer,
 			BufferedWriter energyBuffer,
+			BufferedWriter flowFileBuffer,
 			double limitTime,
 			double dt,
 			double printDeltaT,
@@ -112,6 +113,15 @@ public class GravitationalGranularSilo {
 			final List<Particle> finalParticles = particles;
 			particles.stream().parallel().forEach(p -> {
 				if (p.getPosition().getY() <= 0) {
+
+					// Write time for flow
+					try {
+						flowFileBuffer.write(String.valueOf(time));
+						flowFileBuffer.newLine();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+
 					relocateParticle(p, finalParticles);
 				}
 				p.clearNeighbours();
