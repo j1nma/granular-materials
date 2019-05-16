@@ -27,16 +27,16 @@ function kineticEnergy
 	fclose(fid);
 
     props = {"marker", '.', 'LineStyle', 'none'};
-    h = plot(time, energy);
+    h = plot(time, log10(energy));
     set(h, props{:})
     xlabel("Tiempo (s)");
     ylabel("log_{10}(Energía cinética) (J)");
     set(gca, "yticklabel", num2str(get(gca, "ytick"), '%.e|'))
-    axis([0 round(time(end))])
+    axis([0 time(end)])
     grid on
 
     hold all
 
-	print(sprintf("./output/kineticEnergy-N=%d.png", N), "-dpngcairo", "-F:14")
+	print(sprintf("./output/kineticEnergy-N=%d-T=%ds-Log10.png", N, round(time(end))), "-dpngcairo", "-F:14")
 end
 

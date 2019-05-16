@@ -60,9 +60,9 @@ public class GravitationalGranularSilo {
 //		particles = test2particles;
 
 		// Print to buffer and set dummy particles for Ovito grid
-		printFirstFrame(buffer, particles);
+		printFirstFrame(buffer, energyBuffer, particles);
 
-		limitTime = 0.5;
+		limitTime = 5;
 		Criteria timeCriteria = new TimeCriteria(limitTime);
 
 		// Print frame
@@ -314,7 +314,7 @@ public class GravitationalGranularSilo {
 		}
 	}
 
-	private static void printFirstFrame(BufferedWriter buff, List<Particle> particles) throws IOException {
+	private static void printFirstFrame(BufferedWriter buff, BufferedWriter energyBuffer, List<Particle> particles) throws IOException {
 		// Print dummy particles to simulation output file
 		buff.write(String.valueOf(particles.size() + 2));
 		buff.newLine();
@@ -330,6 +330,10 @@ public class GravitationalGranularSilo {
 				e1.printStackTrace();
 			}
 		});
+
+		// Write N to energy file
+		energyBuffer.write(String.valueOf(particles.size()));
+		energyBuffer.newLine();
 	}
 
 	private static void printGridDummyParticles(BufferedWriter buff) throws IOException {
