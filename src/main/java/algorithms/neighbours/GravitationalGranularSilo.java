@@ -134,6 +134,8 @@ public class GravitationalGranularSilo {
 			System.out.println("Current progress: " + 100 * (time / limitTime));
 			currentFrame++;
 		}
+
+		System.out.println("Max pressure: " + currentMaxPressure);
 	}
 
 	@SuppressWarnings({"StatementWithEmptyBody", "SuspiciousNameCombination"})
@@ -334,25 +336,12 @@ public class GravitationalGranularSilo {
 	}
 
 	private static String particleToString(Particle p) {
-		double pressure;
-		if (Double.valueOf(currentMaxPressure).equals(0.0)) {
-			pressure = p.calculatePressure();
-		} else {
-			pressure = p.calculatePressure() / currentMaxPressure;
-		}
-
-		double r = 2.0f * pressure;
-		double b = 2.0f * (1 - pressure);
-		double g = 0;
-
 		return p.getId() + " " +
 				p.getRadius() + " " +
 				p.getPosition().getX() + " " +
 				p.getPosition().getY() + " " +
 				p.getVelocity().getX() + " " +
 				p.getVelocity().getY() + " " +
-				r + " " +
-				g + " " +
-				b + " \n";
+				p.calculatePressure() + " \n";
 	}
 }
