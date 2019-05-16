@@ -9,6 +9,7 @@ import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class GravitationalGranularSilo {
 
@@ -19,6 +20,8 @@ public class GravitationalGranularSilo {
 	private static final double G = -10;
 
 	private static final double MAX_INTERACTION_RADIUS = 0.03 / 2;
+
+	private static double currentMaxPressure = 0.0;
 
 	// Initial State
 	private static double time = 0.0;
@@ -47,8 +50,8 @@ public class GravitationalGranularSilo {
 //		p1.setPosition(new Vector2D(0.05 - 0.02, 0.2));
 //		p1.setRadius(0.014);
 //		p2.setRadius(0.014);
-//		p2.setPosition(new Vector2D(boxWidth / 2, 0.2));
-//		p1.setVelocity(new Vector2D(-0.3, -0.3));
+//		p2.setPosition(new Vector2D(0.05 - 0.02, 0.5));
+//		p1.setVelocity(new Vector2D(0, 0));
 //		p2.setVelocity(new Vector2D(0, 0));
 //		List<Particle> test2particles = new ArrayList<>();
 //		test2particles.add(p1);
@@ -58,13 +61,12 @@ public class GravitationalGranularSilo {
 		// Print to buffer and set dummy particles for Ovito grid
 		printFirstFrame(buffer, particles);
 
-		limitTime = 2;
+		limitTime = 0.5;
 		Criteria timeCriteria = new TimeCriteria(limitTime);
 
 		// Print frame
 		int currentFrame = 1;
 		int printFrame = (int) Math.ceil(printDeltaT / dt);
-
 
 		while (!timeCriteria.isDone(particles, time)) {
 			time += dt;
@@ -72,8 +74,8 @@ public class GravitationalGranularSilo {
 			// Calculate neighbours
 			CellIndexMethod.run(particles,
 					(boxHeight * 1.1),
-					(int) Math.floor((boxHeight * 1.1) / MAX_INTERACTION_RADIUS),
-					MAX_INTERACTION_RADIUS);
+					(int) Math.floor((boxHeight * 1.1) / (2 * MAX_INTERACTION_RADIUS))
+			);
 
 			// Calculate sum of forces, including fake wall particles
 			particles.stream().parallel().forEach(p -> {
@@ -82,6 +84,9 @@ public class GravitationalGranularSilo {
 				addFakeWallParticles(p, neighboursCustom);
 				calculateForce(p, neighboursCustom, kN, kT);
 			});
+
+			// Save current max pressure for color calculation
+			currentMaxPressure = Collections.max(particles, Comparator.comparing(Particle::calculatePressure)).calculatePressure();
 
 			// Only at first frame, initialize previous position of Verlet with Euler
 			if (time == dt) {
@@ -163,7 +168,7 @@ public class GravitationalGranularSilo {
 
 	private static Set<Particle> filterNeighbors(Particle particle, Set<Particle> neighbors) {
 		HashSet<Particle> set = new HashSet<>();
-		neighbors.stream().parallel().forEach(neighbor -> {
+		neighbors.forEach(neighbor -> {
 			if (particle.getPosition().distance(neighbor.getPosition()) <= (particle.getRadius() + neighbor.getRadius())) {
 				set.add(neighbor);
 			}
@@ -175,6 +180,11 @@ public class GravitationalGranularSilo {
 	 * Calculate sum of forces
 	 */
 	private static void calculateForce(Particle particle, Set<Particle> neighbours, double kN, double kT) {
+		// Particle normal force reset and accumulator
+		particle.resetNormalForce();
+		AtomicReference<Double> atomicNormalForce = new AtomicReference<>(0.0);
+
+		// Particle force calculation
 		Vector2D F = new Vector2D(0, particle.getMass() * G);
 		F = neighbours.stream().map(p2 -> {
 
@@ -202,6 +212,8 @@ public class GravitationalGranularSilo {
 				double Fx = Fn * Enx + Ft * (-Eny);
 				double Fy = Fn * Eny + Ft * Enx;
 
+				atomicNormalForce.accumulateAndGet(Fn, (x, y) -> x + y);
+
 				return new Vector2D(Fx, Fy);
 			} else {
 				return new Vector2D(0.0, 0.0);
@@ -210,6 +222,9 @@ public class GravitationalGranularSilo {
 
 		// Particle knows its force at THIS frame
 		particle.setForce(F);
+
+		// Set particle's normal force for pressure calculation later on
+		particle.setNormalForce(atomicNormalForce.get());
 	}
 
 	private static void moveParticle(Particle particle, double dt) {
@@ -319,12 +334,25 @@ public class GravitationalGranularSilo {
 	}
 
 	private static String particleToString(Particle p) {
+		double pressure;
+		if (Double.valueOf(currentMaxPressure).equals(0.0)) {
+			pressure = p.calculatePressure();
+		} else {
+			pressure = p.calculatePressure() / currentMaxPressure;
+		}
+
+		double r = 2.0f * pressure;
+		double b = 2.0f * (1 - pressure);
+		double g = 0;
+
 		return p.getId() + " " +
 				p.getRadius() + " " +
 				p.getPosition().getX() + " " +
 				p.getPosition().getY() + " " +
 				p.getVelocity().getX() + " " +
-				p.getVelocity().getY() + " \n"
-				;
+				p.getVelocity().getY() + " " +
+				r + " " +
+				g + " " +
+				b + " \n";
 	}
 }

@@ -39,7 +39,7 @@ public class App {
 				|| options.printDeltaT <= 0
 				|| options.length <= 0
 				|| options.width <= 0
-				|| options.diameter <= 0
+				|| options.diameter < 0
 				|| options.kN <= 0
 				|| options.vdc <= 0) {
 			printUsage(parser);
