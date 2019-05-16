@@ -85,6 +85,9 @@ public class GravitationalGranularSilo {
 				calculateForce(p, neighboursCustom, kN, kT);
 			});
 
+			// Save current max pressure for color calculation
+			currentMaxPressure = Collections.max(particles, Comparator.comparing(Particle::calculatePressure)).calculatePressure();
+
 			// Only at first frame, initialize previous position of Verlet with Euler
 			if (time == dt) {
 				particles.forEach(p -> {
@@ -103,9 +106,6 @@ public class GravitationalGranularSilo {
 				// Update position
 				particles.stream().parallel().forEach(p -> moveParticle(p, dt));
 			}
-
-			// Save current max pressure for color calculation
-			currentMaxPressure = Collections.max(particles, Comparator.comparing(Particle::calculatePressure)).calculatePressure();
 
 			// Relocate particles that go outside box a distance of L/10 and clear neighbours
 			final List<Particle> finalParticles = particles;
