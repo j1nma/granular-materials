@@ -63,7 +63,6 @@ public class GravitationalGranularSilo {
 		// Print to buffer and set dummy particles for Ovito grid
 		printFirstFrame(buffer, energyBuffer, particles);
 
-		limitTime = 5;
 		Criteria timeCriteria = new TimeCriteria(limitTime);
 
 		// Print frame
@@ -290,7 +289,6 @@ public class GravitationalGranularSilo {
 				bottomWallParticle.setVelocity(Vector2D.ZERO);
 				neighbours.add(bottomWallParticle);
 			} else {
-				// TODO: y las del borde del gap? puntual fija masa y radio 0
 				if (boxDiameter > 0.0) {
 					if (particle.getPosition().getX() - particle.getRadius() <= diameterStart
 							&& particle.getPosition().distance(new Vector2D(diameterStart, bottomWall)) < particle.getRadius()) {

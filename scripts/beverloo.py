@@ -40,7 +40,7 @@ d = [ 0.15, 0.19, 0.23, 0.27 ];
 
 # Results TODO: change to real values
 mean_Qs = [121.0294118, 166.0784, 196.2745098, 304.9673203];
-std_Qs = [10.0, 10.0, 10.0, 10.0];
+std_Qs = [1.0, 1.0, 1.0, 1.0];
 
 c = numpy.arange(start=0, stop=10, step=0.1);
 
@@ -54,11 +54,6 @@ for i in range(0, len(c)):
 mse = [[0 for col in range(1)] for row in range(len(c))];
 for i in range(0, len(c)):
 	mse[i] = ((array(mean_Qs) - array(Qb[i]))**2).mean(axis=0);
-
-# Plot
-# plot(d, mean_Qs, linestyle='None', marker='o')
-# plot(d, Qb[mse.index(min(mse))], linestyle='None', marker='*')
-# plt.savefig('./output/beverloo/beverloo.png')
 
 # Prepare MSD plot
 f, ax = plt.subplots(1)
