@@ -19,7 +19,7 @@ public class App {
 	private static final String ENERGY_FILE_NAME = OUTPUT_DIRECTORY + "/energy_file";
 	private static final String FLOW_FILE_NAME = OUTPUT_DIRECTORY + "/flow_file";
 
-	private static final int N = 400;
+	private static final int N = 300;
 	private static final double MIN_PARTICLE_DIAMETER = 0.02;
 	private static final double MAX_PARTICLE_DIAMETER = 0.03;
 	private static final double PARTICLE_MASS = 0.01;
