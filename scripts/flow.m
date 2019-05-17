@@ -15,22 +15,21 @@ function flow
 
 	N = 50;
 
-	numberOfFlows = floor(size(times,2) / N);
+	lowerLimit = 1;
+	finalLowerLimit = size(times,2) - N;
+
+	numberOfFlows = finalLowerLimit;
 
 	flows = zeros(numberOfFlows, 1);
 
 	deltaTs = zeros(numberOfFlows, 1);
 
-	j = i + N;
-
-	for j = (1 + N):(N + 1):(numberOfFlows * (N + 1))
-		i = j - N;
+	for i = 1:1:finalLowerLimit
 		ti = times(i);
-		tf = times(j);
+		tf = times(i + N);
 		deltaT = tf - ti;
-		index = j / (1 + N);
-		flows(index) = N / deltaT;
-		deltaTs(index) = deltaT;
+		flows(i) = N / deltaT;
+		deltaTs(i) = times(i + N);
 	endfor
 
     props = {"marker", '.', 'LineStyle', 'none'};
@@ -38,8 +37,7 @@ function flow
     set(h, props{:})
     xlabel("Tiempo (s)");
     ylabel("Caudal [part./s]");
-    % set(gca, "yticklabel", num2str(get(gca, "ytick"), '%.e|'))
-    axis([0 times(end)])
+    axis([0 round(times(end))])
     grid on
 
 	print(sprintf("./output/flow-T=%ds.png", round(times(end))), "-dpngcairo", "-F:14")
