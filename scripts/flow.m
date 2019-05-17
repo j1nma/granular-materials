@@ -40,6 +40,9 @@ function flow
     axis([0 round(times(end))])
     grid on
 
+    disp(sprintf("Mean: %d", mean(flows)))
+    disp(sprintf("STD: %d", std(flows)))
+
 	print(sprintf("./output/flow-T=%ds.png", round(times(end))), "-dpngcairo", "-F:14")
 end
 
