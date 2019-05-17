@@ -42,17 +42,17 @@ d = [ 0.15, 0.19, 0.23, 0.27 ];
 mean_Qs = [121.0294118, 166.0784, 196.2745098, 304.9673203];
 std_Qs = [10.0, 10.0, 10.0, 10.0];
 
-k = numpy.arange(start=0, stop=10, step=0.1);
+c = numpy.arange(start=0, stop=10, step=0.1);
 
 # Beverloo flow
-Qb = [[0 for col in range(4)] for row in range(len(k))];
-for i in range(0, len(k)):
+Qb = [[0 for col in range(4)] for row in range(len(c))];
+for i in range(0, len(c)):
 	for j in range(0, 4):
-		Qb[i][j] = (N/(W*L)) * math.sqrt(g) * power(d[j]-k[i]*((R_min+R_max)/2), 3/2);
+		Qb[i][j] = (N/(W*L)) * math.sqrt(g) * power(d[j]-c[i]*((R_min+R_max)/2), 3/2);
 
 # MSE
-mse = [[0 for col in range(1)] for row in range(len(k))];
-for i in range(0, len(k)):
+mse = [[0 for col in range(1)] for row in range(len(c))];
+for i in range(0, len(c)):
 	mse[i] = ((array(mean_Qs) - array(Qb[i]))**2).mean(axis=0);
 
 # Plot
@@ -70,7 +70,7 @@ xRange = numpy.arange(start=0.15, stop=limitD + step, step=step)
 
 # Get best fit slope
 bestKIndex = mse.index(min(mse))
-bestK = round(k[bestKIndex], 2)
+bestK = round(c[bestKIndex], 2)
 
 # Calculate best fit curve for values of x
 bestY = Qb[bestKIndex]
@@ -83,7 +83,7 @@ plt.xlabel("Diámetero [m]")
 plt.ylabel("Caudal [part./s]")
 plt.xticks(xRange)
 plt.plot(xRange, bestY)
-plt.legend(['Ajuste Ley de Beverloo k = {k}'.format(k = bestK), 'Datos (promedios)'], loc=2)
+plt.legend(['Ajuste Ley de Beverloo c = {c}'.format(c = bestK), 'Datos (promedios)'], loc=2)
 
 # Save plot
 plt.savefig('./output/beverloo/beverloo.png')
@@ -93,10 +93,10 @@ g, ay = plt.subplots(1)
 ay.grid()
 ay.set_ylim(bottom=0, top=max(mse))
 ay.set_xlim(0, 10)
-plt.xlabel("Parámetro libre de Beverloo")
+plt.xlabel("Parámetro libre de Beverloo (c)")
 plt.ylabel("Error del ajuste [m$^4$]")
 ay.set_xticks([bestK])
-plt.plot(k, mse, linestyle='None', marker='*')
+plt.plot(c, mse, linestyle='None', marker='*')
 g.savefig('./output/beverloo/SquaredError')
 
 # Calculate and print diffusion coefficient and R squared
