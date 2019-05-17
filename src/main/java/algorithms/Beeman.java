@@ -2,6 +2,7 @@ package algorithms;
 
 import models.Force;
 
+@Deprecated
 public class Beeman implements IntegrationMethod {
 
 	private double mass;

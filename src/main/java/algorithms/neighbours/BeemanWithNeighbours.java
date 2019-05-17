@@ -4,6 +4,7 @@ import models.Particle;
 import models.neighbours.SumOfForces;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 
+@Deprecated
 public class BeemanWithNeighbours implements IntegrationMethodWithNeighbours {
 
 	private Vector2D previousAcceleration;

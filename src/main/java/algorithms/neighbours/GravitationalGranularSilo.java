@@ -87,7 +87,7 @@ public class GravitationalGranularSilo {
 				calculateForce(p, neighboursCustom, kN, kT);
 			});
 
-			// Save current max pressure for color calculation
+			// Save current max pressure for color calculation TODO: paralelizar
 			currentMaxPressure = Collections.max(particles, Comparator.comparing(Particle::calculatePressure)).calculatePressure();
 
 			// Only at first frame, initialize previous position of Verlet with Euler

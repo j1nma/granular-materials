@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Stack;
 
+@Deprecated
 public class OctaveWriter {
 
 	private final FileWriter fileWriter;
