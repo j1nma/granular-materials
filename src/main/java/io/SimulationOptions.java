@@ -78,13 +78,4 @@ public class SimulationOptions extends OptionsBase {
 			defaultValue = "100000"
 	)
 	public double kN;
-
-	@Option(
-			name = "vdc",
-			abbrev = 'g',
-			help = "Viscous damping coefficient (kg/s).",
-			category = "startup",
-			defaultValue = "70.0"
-	)
-	public double vdc;
 }

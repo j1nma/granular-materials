@@ -42,8 +42,7 @@ public class App {
 				|| options.length <= 0
 				|| options.width <= 0
 				|| options.diameter < 0
-				|| options.kN <= 0
-				|| options.vdc <= 0) {
+				|| options.kN <= 0) {
 			printUsage(parser);
 		}
 
