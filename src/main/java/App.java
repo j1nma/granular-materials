@@ -16,9 +16,10 @@ public class App {
 
 	private static final String OUTPUT_DIRECTORY = "./output";
 	private static final String OVITO_FILE = OUTPUT_DIRECTORY + "/ovito_file.txt";
-	private static final String ENERGY_FILE = OUTPUT_DIRECTORY + "/energy_file.txt";
+	private static final String ENERGY_FILE_NAME = OUTPUT_DIRECTORY + "/energy_file";
+	private static final String FLOW_FILE_NAME = OUTPUT_DIRECTORY + "/flow_file";
 
-	private static final int N = 400;
+	private static final int N = 300;
 	private static final double MIN_PARTICLE_DIAMETER = 0.02;
 	private static final double MAX_PARTICLE_DIAMETER = 0.03;
 	private static final double PARTICLE_MASS = 0.01;
@@ -81,13 +82,17 @@ public class App {
 		FileWriter fw = new FileWriter(String.valueOf(Paths.get(OVITO_FILE)));
 		BufferedWriter writeFileBuffer = new BufferedWriter(fw);
 
-		FileWriter fw2 = new FileWriter(String.valueOf(Paths.get(ENERGY_FILE)));
+		FileWriter fw2 = new FileWriter(String.valueOf(Paths.get(ENERGY_FILE_NAME + "_D=" + diameter + ".txt")));
 		BufferedWriter energyFileBuffer = new BufferedWriter(fw2);
+
+		FileWriter fw3 = new FileWriter(String.valueOf(Paths.get(FLOW_FILE_NAME + "_D=" + diameter + ".txt")));
+		BufferedWriter flowFileBuffer = new BufferedWriter(fw3);
 
 		GravitationalGranularSilo.run(
 				particles,
 				writeFileBuffer,
 				energyFileBuffer,
+				flowFileBuffer,
 				limitTime,
 				deltaT,
 				printDeltaT,
@@ -100,6 +105,7 @@ public class App {
 
 		writeFileBuffer.close();
 		energyFileBuffer.close();
+		flowFileBuffer.close();
 	}
 
 	private static void printUsage(OptionsParser parser) {

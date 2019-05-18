@@ -33,6 +33,7 @@ public class GravitationalGranularSilo {
 			List<Particle> particles,
 			BufferedWriter buffer,
 			BufferedWriter energyBuffer,
+			BufferedWriter flowFileBuffer,
 			double limitTime,
 			double dt,
 			double printDeltaT,
@@ -62,7 +63,6 @@ public class GravitationalGranularSilo {
 		// Print to buffer and set dummy particles for Ovito grid
 		printFirstFrame(buffer, energyBuffer, particles);
 
-		limitTime = 5;
 		Criteria timeCriteria = new TimeCriteria(limitTime);
 
 		// Print frame
@@ -86,7 +86,7 @@ public class GravitationalGranularSilo {
 				calculateForce(p, neighboursCustom, kN, kT);
 			});
 
-			// Save current max pressure for color calculation
+			// Save current max pressure for color calculation TODO: paralelizar
 			currentMaxPressure = Collections.max(particles, Comparator.comparing(Particle::calculatePressure)).calculatePressure();
 
 			// Only at first frame, initialize previous position of Verlet with Euler
@@ -112,6 +112,15 @@ public class GravitationalGranularSilo {
 			final List<Particle> finalParticles = particles;
 			particles.stream().parallel().forEach(p -> {
 				if (p.getPosition().getY() <= 0) {
+
+					// Write time for flow
+					try {
+						flowFileBuffer.write(String.valueOf(time));
+						flowFileBuffer.newLine();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+
 					relocateParticle(p, finalParticles);
 				}
 				p.clearNeighbours();
@@ -280,7 +289,6 @@ public class GravitationalGranularSilo {
 				bottomWallParticle.setVelocity(Vector2D.ZERO);
 				neighbours.add(bottomWallParticle);
 			} else {
-				// TODO: y las del borde del gap? puntual fija masa y radio 0
 				if (boxDiameter > 0.0) {
 					if (particle.getPosition().getX() - particle.getRadius() <= diameterStart
 							&& particle.getPosition().distance(new Vector2D(diameterStart, bottomWall)) < particle.getRadius()) {
