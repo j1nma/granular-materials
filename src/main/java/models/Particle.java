@@ -119,11 +119,12 @@ public class Particle implements Cloneable {
 		this.normalForce = 0.0;
 	}
 
+	public double getKineticEnergy() {
+		return 0.5 * mass * velocity.getNormSq();
+	}
+
 	private double calculatePerimeter() {
 		return 2 * Math.PI * radius;
 	}
 
-	private double getKineticEnergy() {
-		return 0.5 * mass * velocity.getNormSq();
-	}
 }

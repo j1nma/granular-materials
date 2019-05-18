@@ -32,6 +32,7 @@ public class GravitationalGranularSilo {
 	public static void run(
 			List<Particle> particles,
 			BufferedWriter buffer,
+			BufferedWriter energyBuffer,
 			double limitTime,
 			double dt,
 			double printDeltaT,
@@ -59,9 +60,9 @@ public class GravitationalGranularSilo {
 //		particles = test2particles;
 
 		// Print to buffer and set dummy particles for Ovito grid
-		printFirstFrame(buffer, particles);
+		printFirstFrame(buffer, energyBuffer, particles);
 
-		limitTime = 0.5;
+		limitTime = 5;
 		Criteria timeCriteria = new TimeCriteria(limitTime);
 
 		// Print frame
@@ -122,13 +123,21 @@ public class GravitationalGranularSilo {
 				buffer.write(String.valueOf(currentFrame));
 				buffer.newLine();
 				printGridDummyParticles(buffer);
+
+				AtomicReference<Double> totalKinetic = new AtomicReference<>(0.0);
+
 				particles.stream().parallel().forEach(p -> {
 					try {
 						buffer.write(particleToString(p));
 					} catch (IOException e1) {
 						e1.printStackTrace();
 					}
+
+					totalKinetic.accumulateAndGet(p.getKineticEnergy(), (x, y) -> x + y);
 				});
+
+				energyBuffer.write(String.valueOf(time) + " " + String.valueOf(totalKinetic.get()));
+				energyBuffer.newLine();
 			}
 
 			System.out.println("Current progress: " + 100 * (time / limitTime));
@@ -305,7 +314,7 @@ public class GravitationalGranularSilo {
 		}
 	}
 
-	private static void printFirstFrame(BufferedWriter buff, List<Particle> particles) throws IOException {
+	private static void printFirstFrame(BufferedWriter buff, BufferedWriter energyBuffer, List<Particle> particles) throws IOException {
 		// Print dummy particles to simulation output file
 		buff.write(String.valueOf(particles.size() + 2));
 		buff.newLine();
@@ -321,6 +330,10 @@ public class GravitationalGranularSilo {
 				e1.printStackTrace();
 			}
 		});
+
+		// Write N to energy file
+		energyBuffer.write(String.valueOf(particles.size()));
+		energyBuffer.newLine();
 	}
 
 	private static void printGridDummyParticles(BufferedWriter buff) throws IOException {
