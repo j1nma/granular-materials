@@ -53,6 +53,7 @@ public class App {
 
 		if (!parser.containsExplicitOption("deltaT")) {
 			options.deltaT = 0.01 * Math.sqrt(PARTICLE_MASS / options.kN);
+			System.out.println("Delta t: " + options.deltaT);
 		}
 
 		runAlgorithm(
