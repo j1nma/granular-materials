@@ -60,7 +60,7 @@ public class GravitationalGranularSilo {
 //		test2particles.add(p2);
 //		particles = test2particles;
 
-		// Print to buffer and set dummy particles for Ovito grid
+		// Print to buffer
 		printFirstFrame(buffer, energyBuffer, particles);
 
 		Criteria timeCriteria = new TimeCriteria(limitTime);
@@ -127,11 +127,10 @@ public class GravitationalGranularSilo {
 			});
 
 			if ((currentFrame % printFrame) == 0) {
-				buffer.write(String.valueOf(particles.size() + 2));
+				buffer.write(String.valueOf(particles.size()));
 				buffer.newLine();
 				buffer.write(String.valueOf(currentFrame));
 				buffer.newLine();
-				printGridDummyParticles(buffer);
 
 				AtomicReference<Double> totalKinetic = new AtomicReference<>(0.0);
 
@@ -323,12 +322,10 @@ public class GravitationalGranularSilo {
 	}
 
 	private static void printFirstFrame(BufferedWriter buff, BufferedWriter energyBuffer, List<Particle> particles) throws IOException {
-		// Print dummy particles to simulation output file
-		buff.write(String.valueOf(particles.size() + 2));
+		buff.write(String.valueOf(particles.size()));
 		buff.newLine();
 		buff.write("0");
 		buff.newLine();
-		printGridDummyParticles(buff);
 
 		// Print remaining particles
 		particles.forEach(particle -> {
@@ -342,18 +339,6 @@ public class GravitationalGranularSilo {
 		// Write N to energy file
 		energyBuffer.write(String.valueOf(particles.size()));
 		energyBuffer.newLine();
-	}
-
-	private static void printGridDummyParticles(BufferedWriter buff) throws IOException {
-		// Particles for fixing Ovito grid
-		Particle dummy1 = new Particle(-100, 0, 0);
-		Particle dummy2 = new Particle(-101, 0, 0);
-		dummy1.setPosition(new Vector2D(0, boxHeight / 10));
-		dummy1.setVelocity(new Vector2D(0, 0));
-		dummy2.setPosition(new Vector2D(boxWidth, boxHeight + (boxHeight / 10)));
-		dummy2.setVelocity(new Vector2D(0, 0));
-		buff.write(particleToString(dummy1));
-		buff.write(particleToString(dummy2));
 	}
 
 	private static String particleToString(Particle p) {
