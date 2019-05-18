@@ -1,5 +1,5 @@
 function kineticEnergy
-	fid = fopen('./output/energy_file.txt');
+	fid = fopen('./output/energy_file_D=0.0.txt');
 
 	time = [0.0];
 	energy = [0.0];
@@ -26,13 +26,15 @@ function kineticEnergy
 
 	fclose(fid);
 
+    jump = find(energy(2:end) < 1e-6, 1, 'first');
+
     props = {"marker", '.', 'LineStyle', 'none'};
     h = plot(time, log10(energy));
     set(h, props{:})
     xlabel("Tiempo (s)");
     ylabel("log_{10}(Energía cinética) (J)");
-    set(gca, "yticklabel", num2str(get(gca, "ytick"), '%.e|'))
     axis([0 time(end)])
+    set(gca, "xtick", time(jump + 1))
     grid on
 
     hold all
