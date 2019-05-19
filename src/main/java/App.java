@@ -15,7 +15,7 @@ import java.util.List;
 public class App {
 
 	private static final String OUTPUT_DIRECTORY = "./output";
-	private static final String OVITO_FILE = OUTPUT_DIRECTORY + "/ovito_file.txt";
+	private static final String OVITO_FILE = OUTPUT_DIRECTORY + "/ovito_file";
 	private static final String ENERGY_FILE_NAME = OUTPUT_DIRECTORY + "/energy_file";
 	private static final String FLOW_FILE_NAME = OUTPUT_DIRECTORY + "/flow_file";
 
@@ -80,7 +80,7 @@ public class App {
 	                                 double kN,
 	                                 double kT) throws IOException {
 
-		FileWriter fw = new FileWriter(String.valueOf(Paths.get(OVITO_FILE)));
+		FileWriter fw = new FileWriter(String.valueOf(Paths.get(OVITO_FILE + "_D=" + diameter + ".txt")));
 		BufferedWriter writeFileBuffer = new BufferedWriter(fw);
 
 		FileWriter fw2 = new FileWriter(String.valueOf(Paths.get(ENERGY_FILE_NAME + "_D=" + diameter + ".txt")));
