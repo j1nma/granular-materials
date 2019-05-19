@@ -97,3 +97,7 @@ scripts/__pycache__/
 /*.txt
 /scripts/data/
 /data/
+/scripts/means
+/scripts/stds
+/scripts/means.txt
+/scripts/stds.txt

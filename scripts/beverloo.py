@@ -7,6 +7,7 @@ import math
 from numpy import vstack, zeros, array, ones, linalg, transpose, delete, mean, power
 from pylab import plot, show
 from oct2py import octave
+from oct2py.io import read_file
 octave.addpath('./scripts/')
 
 def squared_error(y, modelY):
@@ -38,11 +39,18 @@ W = 0.3;
 L = 1.0;
 d = [ 0.15, 0.19, 0.23, 0.27 ];
 
-# Results TODO: change to real values
-mean_Qs = [121.0294118, 166.0784, 196.2745098, 304.9673203];
-std_Qs = [1.0, 1.0, 1.0, 1.0];
+means_file = open("./scripts/means.txt", "r")
+mean_Qs = means_file.read().split();
+mean_Qs = [float(i) for i in mean_Qs]
+means_file.close()
 
-c = numpy.arange(start=0, stop=10, step=0.1);
+stds_file = open("./scripts/stds.txt", "r")
+std_Qs = stds_file.read().split();
+std_Qs = [float(i) for i in std_Qs]
+stds_file.close()
+
+cLimit = 3
+c = numpy.arange(start=0, stop=cLimit, step=0.1);
 
 # Beverloo flow
 Qb = [[0 for col in range(4)] for row in range(len(c))];
@@ -87,12 +95,12 @@ plt.savefig('./output/beverloo/beverloo.png')
 g, ay = plt.subplots(1)
 ay.grid()
 ay.set_ylim(bottom=0, top=max(mse))
-ay.set_xlim(0, 10)
+ay.set_xlim(0, cLimit)
 plt.xlabel("Parámetro libre de Beverloo (c)")
-plt.ylabel("Error del ajuste [m$^4$]")
+plt.ylabel("Error del ajuste")
 ay.set_xticks([bestK])
 plt.plot(c, mse, linestyle='None', marker='*')
-g.savefig('./output/beverloo/SquaredError')
+g.savefig('./output/beverloo/squaredError')
 
 # Calculate and print diffusion coefficient and R squared
 print("Parámetro libre de Beverloo = %f" % (bestK))
