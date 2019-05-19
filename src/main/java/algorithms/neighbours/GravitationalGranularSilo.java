@@ -167,7 +167,7 @@ public class GravitationalGranularSilo {
 		while ((tries++ < maxTries) && !ParticleGenerator.setNewRandomPosition(particles,
 				particle,
 				new Vector2D(0.0, boxWidth),
-				new Vector2D(boxHeight * 0.8, boxHeight * 1.1),
+				new Vector2D(boxHeight * 0.5, boxHeight * 1.1),
 				particle.getRadius())) {
 		}
 
