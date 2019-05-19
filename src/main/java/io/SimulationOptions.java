@@ -71,11 +71,20 @@ public class SimulationOptions extends OptionsBase {
 	public double diameter;
 
 	@Option(
-			name = "stiffness",
+			name = "normalK",
 			abbrev = 'k',
-			help = "Stiffness (N/m).",
+			help = "Normal elastic constant (N/m).",
 			category = "startup",
 			defaultValue = "100000"
 	)
 	public double kN;
+
+	@Option(
+			name = "tangentK",
+			abbrev = 'i',
+			help = "Tangent elastic constant (N/m).",
+			category = "startup",
+			defaultValue = "200000"
+	)
+	public double kT;
 }

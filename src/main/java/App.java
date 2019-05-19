@@ -42,7 +42,8 @@ public class App {
 				|| options.length <= 0
 				|| options.width <= 0
 				|| options.diameter < 0
-				|| options.kN <= 0) {
+				|| options.kN <= 0
+				|| options.kT <= 0) {
 			printUsage(parser);
 		}
 
@@ -65,7 +66,7 @@ public class App {
 				options.width,
 				options.diameter,
 				options.kN,
-				options.kN * 2
+				options.kT
 		);
 	}
 
