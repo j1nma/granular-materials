@@ -83,8 +83,15 @@ public class App {
 		FileWriter fw = new FileWriter(String.valueOf(Paths.get(OVITO_FILE + "_D=" + diameter + ".txt")));
 		BufferedWriter writeFileBuffer = new BufferedWriter(fw);
 
-		FileWriter fw2 = new FileWriter(String.valueOf(Paths.get(ENERGY_FILE_NAME + "_D=" + diameter + ".txt")));
-		BufferedWriter energyFileBuffer = new BufferedWriter(fw2);
+		FileWriter fw2;
+		BufferedWriter energyFileBuffer;
+		if (diameter == 0.0) {
+			fw2 = new FileWriter(String.valueOf(Paths.get(ENERGY_FILE_NAME + "_D=0.0_kT=" + kT + ".txt")));
+			energyFileBuffer = new BufferedWriter(fw2);
+		} else {
+			fw2 = new FileWriter(String.valueOf(Paths.get(ENERGY_FILE_NAME + "_D=" + diameter + ".txt")));
+			energyFileBuffer = new BufferedWriter(fw2);
+		}
 
 		FileWriter fw3 = new FileWriter(String.valueOf(Paths.get(FLOW_FILE_NAME + "_D=" + diameter + ".txt")));
 		BufferedWriter flowFileBuffer = new BufferedWriter(fw3);

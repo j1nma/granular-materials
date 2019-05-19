@@ -13,7 +13,7 @@ function flowWithD(diameter, dirName)
 
     	fclose(fid);
 
-    	N = 25;
+    	N = 50;
 
     	lowerLimit = 1;
     	finalLowerLimit = size(times,2) - N;
