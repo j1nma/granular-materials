@@ -6,11 +6,12 @@ function flowWithD(diameter, dirName)
     	times = [initialT];
 
         # Read file
+        lineCounter = 1;
     	while (!feof(fid))
     	    # Parse out time
     	    times = [times, str2num(fgetl(fid))];
     	endwhile
-
+        disp(size(times))
     	fclose(fid);
 
     	N = 50;
@@ -33,10 +34,11 @@ function flowWithD(diameter, dirName)
     	endfor
 
         props = {"marker", '.', 'LineStyle', 'none'};
-        h = plot(deltaTs, flows);
+        h = plot(deltaTs, flows, sprintf(";D = %dm;", diameter));
         set(h, props{:})
         xlabel("Tiempo (s)");
         ylabel("Caudal [part./s]");
+        legend("location", "eastoutside");
         axis([0 round(times(end))])
         grid on
 

@@ -33,6 +33,13 @@ def render(painter, **args):
 	# upper right
 	xy4 = project_point([0.0, 1.1, 0], painter, args)
 	
+	gapSize = 0.15
+	gapSides = (0.3-gapSize)/2
+	# gap left
+	xy5 = project_point([gapSides, 0.1, 0], painter, args)
+	# gap right
+	xy6 = project_point([gapSides+gapSize, 0.1, 0], painter, args)
+	
 	# This demo code prints the current animation frame into the upper left corner of the viewport.
 	
 	pen = QPen(Qt.SolidLine)
@@ -41,9 +48,13 @@ def render(painter, **args):
 	painter.setPen(pen)
 
 	painter.drawLine(xy1[0],xy1[1],xy2[0],xy2[1])
-	painter.drawLine(xy1[0],xy1[1],xy3[0],xy3[1])
 	painter.drawLine(xy2[0],xy2[1],xy4[0],xy4[1])
 	painter.drawLine(xy3[0],xy3[1],xy4[0],xy4[1])
+	
+	# handle gap left
+	painter.drawLine(xy3[0],xy3[1],xy5[0],xy5[1])
+	# handle gap right
+	painter.drawLine(xy6[0],xy6[1],xy1[0],xy1[1])
 	
 	# Also print the current number of particles into the lower left corner of the viewport.
 

@@ -29,13 +29,13 @@ function kineticEnergyWithD(diameter, dirName)
     #jump = find(energy(2:end) < 1e-18, 1, 'first');
 
     props = {'marker', '.', 'LineStyle', 'none'};
-    h = plot(time, log10(energy), sprintf(";D = %d;", diameter));
+    h = plot(time, log10(energy), sprintf(";D = %dm;", diameter));
     set(h, props{:})
     xlabel("Tiempo [s]");
     ylabel("log_{10}(Energía cinética) [J]");
     #set(gca, "xtick", time(jump + 1))
     grid on
-    legend("location", "southeast");
+    legend("location", "eastoutside");
 
     hold all
 

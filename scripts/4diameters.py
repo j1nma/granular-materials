@@ -9,7 +9,7 @@ W = 0.3;
 L = 1.0;
 d = [ 0.15, 0.19, 0.23, 0.27 ];
 
-limitTime = 15.0
+limitTime = 5.0
 printDeltaT = 0.01
 
 for diameter in d:
