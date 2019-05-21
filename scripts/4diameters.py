@@ -7,9 +7,9 @@ octave.addpath('./scripts/')
 
 W = 0.3;
 L = 1.0;
-d = [ 0.15, 0.19, 0.23, 0.27 ];
+d = [ 0.16, 0.18 ];
 
-limitTime = 5.0
+limitTime = 15.0
 printDeltaT = 0.01
 
 for diameter in d:

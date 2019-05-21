@@ -37,11 +37,13 @@ function kineticEnergyWithkT(kt, dirName)
     #ylabel("Energía cinética [J]");
     ylabel("log_{10}(Energía cinética) [J]");
     #set(gca, "xtick", time(jump + 1))
+    #xlim ([0, 3]);
     grid on
     legend("location", "northeast");
 
     hold all
 
-	print(sprintf("%s/kineticEnergy-N=%d-T=%ds-D=0.0-kT=%d-Log10.png", dirName, N, round(time(end)), kt), "-dpngcairo", "-F:14")
+	print(sprintf("%s/kineticEnergy-N=%d-T=%ds-D=0.0-kT=%d.png", dirName, N, round(time(end)), kt), "-dpngcairo", "-F:14")
+	#print(sprintf("%s/kineticEnergy-N=%d-T=%ds-D=0.0-kT=%d-Log10-1s.png", dirName, N, round(time(end)), kt), "-dpngcairo", "-F:12")
 end
 

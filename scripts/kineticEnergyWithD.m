@@ -33,6 +33,7 @@ function kineticEnergyWithD(diameter, dirName)
     set(h, props{:})
     xlabel("Tiempo [s]");
     ylabel("log_{10}(Energía cinética) [J]");
+    xlim ([0, 16]);
     #set(gca, "xtick", time(jump + 1))
     grid on
     legend("location", "eastoutside");

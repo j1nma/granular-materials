@@ -2,7 +2,8 @@ import os
 from oct2py import octave
 octave.addpath('./scripts/')
 
-d = [ 0.15, 0.19, 0.23, 0.27 ];
+d = [ 0.15, 0.16, 0.18, 0.19, 0.23, 0.27 ];
+#d = [ 0.15, 0.16, 0.18, 0.19 ];
 
 dirName = './output';
 kineticEnergiesDirName = dirName + '/4KineticEnergies';
