@@ -2,7 +2,7 @@ import os
 from oct2py import octave
 octave.addpath('./scripts/')
 
-kT = [300000, 400000];
+kT = [10000, 50000, 100000, 200000];
 
 dirName = './output';
 kineticEnergieskTDirName = dirName + '/kineticEnergies-kT';

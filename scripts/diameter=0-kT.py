@@ -8,9 +8,9 @@ octave.addpath('./scripts/')
 W = 0.3;
 L = 1.0;
 diameter = 0.0;
-kT = [300000, 400000];
+kT = [10000, 50000, 100000, 200000];
 
-limitTime = 5.0
+limitTime = 15.0
 printDeltaT = 0.01
 
 for k in kT:

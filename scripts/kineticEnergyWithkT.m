@@ -29,9 +29,12 @@ function kineticEnergyWithkT(kt, dirName)
     jump = find(energy(2:end) < 1e-18, 1, 'first');
 
     props = {'marker', '.', 'LineStyle', 'none'};
+    #h = plot(time(1:end/10), energy(1:end/10), sprintf(";kT = %dN/m;", kt));
     h = plot(time, log10(energy), sprintf(";kT = %dN/m;", kt));
     set(h, props{:})
     xlabel("Tiempo [s]");
+    #xlabel("log_{10}(Tiempo) [s]");
+    #ylabel("Energía cinética [J]");
     ylabel("log_{10}(Energía cinética) [J]");
     #set(gca, "xtick", time(jump + 1))
     grid on
