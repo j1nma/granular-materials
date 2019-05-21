@@ -50,7 +50,7 @@ c = numpy.arange(start=0, stop=cLimit, step=0.1);
 Qb = [[0 for col in range(len(d))] for row in range(len(c))];
 for i in range(0, len(c)):
 	for j in range(0, len(d)):
-		Qb[i][j] = 1773.33 * math.sqrt(g) * power(d[j]-c[i]*0.025, 3/2);
+		Qb[i][j] = 1773.33 * math.sqrt(g) * power(d[j]-c[i]*((R_min + R_max)/2), 3/2);
 
 # MSE
 mse = [[0 for col in range(1)] for row in range(len(c))];
