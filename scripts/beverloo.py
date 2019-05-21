@@ -13,12 +13,6 @@ octave.addpath('./scripts/')
 def squared_error(y, modelY):
     return sum((modelY - y) * (modelY - y))
 
-def coefficient_of_determination(y, modelY):
-    yMeans = [mean(y) for x in y]
-    squaredErrorRegression = squared_error(y, modelY)
-    squaredErrorYMean = squared_error(y, yMeans)
-    return 1 - (squaredErrorRegression/squaredErrorYMean)
-
 dirName = './output';
 beverlooDirName = dirName + '/beverloo';
 
@@ -37,7 +31,7 @@ m = 0.01;
 N = 300;
 W = 0.3;
 L = 1.0;
-d = [ 0.15, 0.19, 0.23, 0.27 ];
+d = [ 0.15, 0.16, 0.18, 0.19 ];
 
 means_file = open("./scripts/means.txt", "r")
 mean_Qs = means_file.read().split();
@@ -49,14 +43,14 @@ std_Qs = stds_file.read().split();
 std_Qs = [float(i) for i in std_Qs]
 stds_file.close()
 
-cLimit = 3
+cLimit = 10
 c = numpy.arange(start=0, stop=cLimit, step=0.1);
 
 # Beverloo flow
-Qb = [[0 for col in range(4)] for row in range(len(c))];
+Qb = [[0 for col in range(len(d))] for row in range(len(c))];
 for i in range(0, len(c)):
-	for j in range(0, 4):
-		Qb[i][j] = (N/(W*L)) * math.sqrt(g) * power(d[j]-c[i]*((R_min+R_max)/2), 3/2);
+	for j in range(0, len(d)):
+		Qb[i][j] = 1773.33 * math.sqrt(g) * power(d[j]-c[i]*0.025, 3/2);
 
 # MSE
 mse = [[0 for col in range(1)] for row in range(len(c))];
@@ -66,11 +60,6 @@ for i in range(0, len(c)):
 # Prepare MSD plot
 f, ax = plt.subplots(1)
 
-# Calculate diameter range and step
-step = 0.04
-limitD = 0.27
-xRange = numpy.arange(start=0.15, stop=limitD + step, step=step)
-
 # Get best fit slope
 bestKIndex = mse.index(min(mse))
 bestK = round(c[bestKIndex], 2)
@@ -79,13 +68,13 @@ bestK = round(c[bestKIndex], 2)
 bestY = Qb[bestKIndex]
 
 # Plot data and best fit curve
-ax.errorbar(xRange, mean_Qs, std_Qs, linestyle='None', marker='^')
+ax.errorbar(d, mean_Qs, std_Qs, linestyle='None', marker='^')
 ax.grid()
 ax.set_ylim(bottom=0)
 plt.xlabel("Diámetero [m]")
 plt.ylabel("Caudal [part./s]")
-plt.xticks(xRange)
-plt.plot(xRange, bestY)
+plt.xticks(d)
+plt.plot(d, bestY)
 plt.legend(['Ajuste Ley de Beverloo c = {c}'.format(c = bestK), 'Datos (promedios)'], loc=2)
 
 # Save plot
@@ -104,4 +93,3 @@ g.savefig('./output/beverloo/squaredError')
 
 # Calculate and print diffusion coefficient and R squared
 print("Parámetro libre de Beverloo = %f" % (bestK))
-print("R² = %f" % (coefficient_of_determination(array(mean_Qs), array(bestY))))
